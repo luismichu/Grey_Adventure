@@ -15,6 +15,6 @@ public class GreyAdventure extends Game {
 	@Override
 	public void create () {
 		MyWindowListener.instantiate();
-		setScreen(new Play(this));
+		setScreen(new MainMenu(this));
 	}
 }

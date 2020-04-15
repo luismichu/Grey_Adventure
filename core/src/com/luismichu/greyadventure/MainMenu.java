@@ -120,7 +120,7 @@ public class MainMenu implements Screen {
             batch.setProjectionMatrix(cameraUI.combined);
             batch.draw(logo, cameraUI.viewportWidth / 2f - logo.getWidth() / 2f, cameraUI.viewportHeight / 2f - logo.getHeight() / 2f);
             batch.end();
-            if(elapsedTime > 0.03) {
+            if(elapsedTime > 3) {
                 alpha -= 1.5f * delta;
                 if(alpha <= -0.5f) {
                     alpha = 1;
