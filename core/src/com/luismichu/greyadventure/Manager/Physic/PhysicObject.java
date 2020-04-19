@@ -14,7 +14,8 @@ public class PhysicObject {
     private float linearDamping, angle;
     private float density, restitution, friction;
     private short groupIndex;
-    private Body body;
+    private int userData;
+    protected Body body;
 
     public PhysicObject(){
         type = BodyDef.BodyType.DynamicBody;
@@ -28,6 +29,7 @@ public class PhysicObject {
         restitution = 0.3f;
         friction = 0.5f;
         groupIndex = 0;
+        userData = 0;
     }
 
     public void createObject(){
@@ -51,7 +53,7 @@ public class PhysicObject {
         fixtureDef.friction = friction;
         fixtureDef.filter.groupIndex = groupIndex;
 
-        body.createFixture(fixtureDef).setUserData(2);
+        body.createFixture(fixtureDef).setUserData(userData);
 
         shape.dispose();
     }
@@ -110,5 +112,9 @@ public class PhysicObject {
 
     public void setGroupIndex(short groupIndex) {
         this.groupIndex = groupIndex;
+    }
+
+    public void setUserData(int userData) {
+        this.userData = userData;
     }
 }

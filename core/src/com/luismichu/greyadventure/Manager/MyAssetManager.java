@@ -1,18 +1,25 @@
 package com.luismichu.greyadventure.Manager;
 
 import com.badlogic.gdx.assets.AssetDescriptor;
+import com.badlogic.gdx.assets.AssetLoaderParameters;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.Array;
 
 public class MyAssetManager {
     private AssetManager manager;
+    private Array<MyAssetDescriptor> queue;
 
     public MyAssetManager(){
         manager = new AssetManager();
+        manager.setLoader(TiledMap.class, new TmxMapLoader());
         AssetDescriptors.initialize();
+        queue = new Array<>();
     }
 
     public void loadMainMenu(){
@@ -28,28 +35,40 @@ public class MyAssetManager {
     }
 
     public void loadGame(){
-        for(AssetDescriptor<Texture> texture : AssetDescriptors.greyStanding)
+        for(MyAssetDescriptor texture : AssetDescriptors.greyStanding)
             manager.load(texture);
 
-        for(AssetDescriptor<Texture> texture : AssetDescriptors.greyRunningL)
+        for(MyAssetDescriptor texture : AssetDescriptors.greyRunningL)
             manager.load(texture);
 
-        for(AssetDescriptor<Texture> texture : AssetDescriptors.greyRunningR)
+        for(MyAssetDescriptor texture : AssetDescriptors.greyRunningR)
             manager.load(texture);
     }
 
-    public void loadAssets(){
-        for(AssetDescriptor<Texture> texture : AssetDescriptors.greyStanding)
+    public void loadDialog(){
+        manager.load(AssetDescriptors.skin);
+        manager.load(AssetDescriptors.textSound);
+
+        for(MyAssetDescriptor texture : AssetDescriptors.dialogueBox)
             manager.load(texture);
 
-        for(AssetDescriptor<Texture> texture : AssetDescriptors.greyRunningL)
-            manager.load(texture);
+        manager.finishLoading();
+    }
 
-        for(AssetDescriptor<Texture> texture : AssetDescriptors.greyRunningR)
-            manager.load(texture);
+    public void addToQueue(MyAssetDescriptor assetDescriptor){
+        queue.add(assetDescriptor);
+    }
 
-        for(AssetDescriptor<Music> music : AssetDescriptors.music)
-            manager.load(music);
+    public void addToQueue(Array<MyAssetDescriptor> assetDescriptors){
+        for(MyAssetDescriptor assetDescriptor : assetDescriptors)
+            queue.add(assetDescriptor);
+    }
+
+    public void loadQueue(){
+        for(MyAssetDescriptor assetDescriptor : queue)
+            manager.load(assetDescriptor);
+
+        manager.finishLoading();
     }
 
     public float getProgress(){
@@ -60,50 +79,78 @@ public class MyAssetManager {
         return manager.update();
     }
 
-    public Texture getTexture(AssetDescriptor<Texture> t){
-        return manager.get(t);
+    public Object get(MyAssetDescriptor t){ return manager.get(t); }
+
+    public Texture getTexture(MyAssetDescriptor t){
+        return (Texture) manager.get(t);
     }
 
-    public Array<Texture> getTextures(Array<AssetDescriptor<Texture>> arrayAssetDescriptorTexture){
+    public Array<Texture> getTextures(Array<MyAssetDescriptor> arrayAssetDescriptorTexture){
         Array<Texture> arrayTexture = new Array<>();
 
-        for(AssetDescriptor<Texture> t : arrayAssetDescriptorTexture)
-            arrayTexture.add(manager.get(t));
+        for(MyAssetDescriptor t : arrayAssetDescriptorTexture)
+            arrayTexture.add((Texture) manager.get(t));
         return arrayTexture;
     }
 
-    public Array<Music> getMusics(Array<AssetDescriptor<Music>> arrayAssetDescriptorMusic){
+    public Array<Music> getMusics(Array<MyAssetDescriptor> arrayAssetDescriptorMusic){
         Array<Music> arrayMusic = new Array<>();
 
-        for(AssetDescriptor<Music> t : arrayAssetDescriptorMusic)
-            arrayMusic.add(manager.get(t));
+        for(MyAssetDescriptor t : arrayAssetDescriptorMusic)
+            arrayMusic.add((Music) manager.get(t));
         return arrayMusic;
     }
 
-    public Skin getSkin(AssetDescriptor<Skin> skin){
-        return manager.get(skin);
+    public Sound getSound(MyAssetDescriptor assetDescriptorSound){
+        return (Sound) manager.get(assetDescriptorSound);
+    }
+
+    public Skin getSkin(MyAssetDescriptor skin){
+        return (Skin) manager.get(skin);
+    }
+
+    public static class MyAssetDescriptor extends AssetDescriptor{
+        public MyAssetDescriptor(String fileName, Class c) {
+            super(fileName, c);
+        }
     }
 
     public static class AssetDescriptors {
-        public static final Array<AssetDescriptor<Texture>> greyStanding = new Array<>();
-        public static final Array<AssetDescriptor<Texture>> greyRunningL = new Array<>();
-        public static final Array<AssetDescriptor<Texture>> greyRunningR = new Array<>();
-        public static final Array<AssetDescriptor<Music>> music = new Array<>();
-        public static final AssetDescriptor<Skin> skin = new AssetDescriptor<>(Assets.SKIN, Skin.class);
-        public static final AssetDescriptor<Texture> mainMenuBackground = new AssetDescriptor<>(Assets.MAIN_MENU_BACKGROUND, Texture.class);
-        public static final AssetDescriptor<Texture> greyAdventureLogo = new AssetDescriptor<>(Assets.GREY_ADVENTURE_LOGO, Texture.class);
+        private static AssetDescriptors assetDescriptors;
+        public static final Array<MyAssetDescriptor> greyStanding = new Array<>();
+        public static final Array<MyAssetDescriptor> greyRunningL = new Array<>();
+        public static final Array<MyAssetDescriptor> greyRunningR = new Array<>();
+        public static final Array<MyAssetDescriptor> dialogueBox = new Array<>();
+        public static final Array<MyAssetDescriptor> music = new Array<>();
+        public static final MyAssetDescriptor textSound = new MyAssetDescriptor(Assets.TEXT_SOUND, Sound.class);
+        public static final MyAssetDescriptor skin = new MyAssetDescriptor(Assets.SKIN, Skin.class);
+        public static final MyAssetDescriptor mainMenuBackground = new MyAssetDescriptor(Assets.MAIN_MENU_BACKGROUND, Texture.class);
+        public static final MyAssetDescriptor greyAdventureLogo = new MyAssetDescriptor(Assets.GREY_ADVENTURE_LOGO, Texture.class);
+        public static final MyAssetDescriptor map1 = new MyAssetDescriptor(Assets.MAP1, TiledMap.class);
+        public static final Array<String> dialogMap1 = new Array<>();
 
-        private AssetDescriptors(){}
+        private AssetDescriptors(){
+            for (int i = 0; i < Assets.GREY_STANDING_NUM; i++)
+                greyStanding.add(new MyAssetDescriptor(Assets.GREY_STANDING + i + Assets.GREY_STANDING_EXT, Texture.class));
+
+            for (int i = 0; i < Assets.GREY_RUNNING_NUM; i++)
+                greyRunningL.add(new MyAssetDescriptor(Assets.GREY_RUNNING_L + i + Assets.GREY_RUNNING_EXT, Texture.class));
+
+            for (int i = 0; i < Assets.GREY_RUNNING_NUM; i++)
+                greyRunningR.add(new MyAssetDescriptor(Assets.GREY_RUNNING_R + i + Assets.GREY_RUNNING_EXT, Texture.class));
+
+            for (int i = 0; i < Assets.DIALOGUE_BOX_NUM; i++)
+                dialogueBox.add(new MyAssetDescriptor(Assets.DIALOGUE_BOX + i + Assets.DIALOGUE_BOX_EXT, Texture.class));
+
+            dialogMap1.add("Hey, bienvenido viajero");
+            dialogMap1.add("Como te va la vida");
+            dialogMap1.add("Espero que bien");
+            dialogMap1.add("A mi tambien. Gracias por preguntar!");
+        }
 
         public static void initialize(){
-            for (int i = 0; i < Assets.GREY_STANDING_NUM; i++)
-                greyStanding.add(new AssetDescriptor<>(Assets.GREY_STANDING + i + Assets.GREY_STANDING_EXT, Texture.class));
-
-            for (int i = 0; i < Assets.GREY_RUNNING_NUM; i++)
-                greyRunningL.add(new AssetDescriptor<>(Assets.GREY_RUNNING_L + i + Assets.GREY_RUNNING_EXT, Texture.class));
-
-            for (int i = 0; i < Assets.GREY_RUNNING_NUM; i++)
-                greyRunningR.add(new AssetDescriptor<>(Assets.GREY_RUNNING_R + i + Assets.GREY_RUNNING_EXT, Texture.class));
+            if(assetDescriptors == null)
+                assetDescriptors = new AssetDescriptors();
         }
 
         private static class Assets{
@@ -122,6 +169,15 @@ public class MyAssetManager {
             public static final String GREY_ADVENTURE_LOGO = "sprites/grey_adventure_logo.png";
 
             public static final String MUSIC = "musica";
+            public static final String TEXT_SOUND = "sounds/text3.wav";
+
+            public static final String DIALOGUE_BOX = "sprites/dialoguebox_";
+            public static final int DIALOGUE_BOX_NUM = 2;
+            public static final String DIALOGUE_BOX_EXT = ".png";
+
+            public static final String MAP1 = "maps/Mapa1.tmx";
+            public static final String MAP2 = "maps/Mapa2.tmx";
+            public static final String MAP3 = "maps/Mapa3.tmx";
 
             private Assets(){}
         }

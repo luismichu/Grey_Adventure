@@ -63,8 +63,6 @@ public class MyPreferenceManager {
     public void setResolution(Integer[] resolution){
         prefs.putInteger(Preference.RESOLUTION_WIDTH, resolution[0]);
         prefs.putInteger(Preference.RESOLUTION_HEIGHT, resolution[1]);
-
-        //Gdx.graphics.setFullscreenMode(50, 50, true)
     }
 
     public void setFullScreen(boolean state){
@@ -96,6 +94,14 @@ public class MyPreferenceManager {
         return prefs.getBoolean(Preference.VSYNC, true);
     }
 
+    public void setTextSpeed(float textSpeed){
+        prefs.putFloat(Preference.TEXT_SPEED, textSpeed);
+    }
+
+    public float getTextSpeed(){
+        return prefs.getFloat(Preference.TEXT_SPEED, Preference.MEDIUM);
+    }
+
     public void flush(){
         prefs.flush();
     }
@@ -113,5 +119,9 @@ public class MyPreferenceManager {
         public static final int DEFAULT_HEIGHT = 720;
         public static final String FULLSCREEN = "fullscreen";
         public static final String VSYNC = "vsync";
+        public static final String TEXT_SPEED = "text_speed";
+        public static final float FAST = 0.1f;
+        public static final float MEDIUM = 0.15f;
+        public static final float SLOW = 0.2f;
     }
 }
