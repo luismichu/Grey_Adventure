@@ -14,7 +14,7 @@ public class PhysicObject {
     private float linearDamping, angle;
     private float density, restitution, friction;
     private short groupIndex;
-    private int userData;
+    private short userData;
     protected Body body;
 
     public PhysicObject(){
@@ -32,7 +32,7 @@ public class PhysicObject {
         userData = 0;
     }
 
-    public void createObject(){
+    public void createObject(boolean sensor){
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = type;
         bodyDef.fixedRotation = fixedRotation;
@@ -43,11 +43,19 @@ public class PhysicObject {
 
         body = MyPhysicManager.getInstance().createBody(bodyDef);
 
+        createFixture(null, sensor);
+    }
+
+    public void createFixture(Vector2 pos, boolean sensor){
         PolygonShape shape = new PolygonShape();
-        shape.setAsBox(size.x, size.y);
+        if(pos == null)
+            shape.setAsBox(size.x, size.y);
+        else
+            shape.setAsBox(size.x, size.y, pos, 0);
 
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
+        fixtureDef.isSensor = sensor;
         fixtureDef.density = density;
         fixtureDef.restitution = restitution;
         fixtureDef.friction = friction;
@@ -114,7 +122,7 @@ public class PhysicObject {
         this.groupIndex = groupIndex;
     }
 
-    public void setUserData(int userData) {
+    public void setUserData(short userData) {
         this.userData = userData;
     }
 }

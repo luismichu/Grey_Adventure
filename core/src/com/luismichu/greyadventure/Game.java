@@ -22,7 +22,6 @@ public class Game implements Screen {
     private MyAssetManager assetManager;
     private MyPreferenceManager preferenceManager;
     private MyPhysicManager physicManager;
-    private Dialog dialog;
     private OrthographicCamera camera, cameraUI;
     private FitViewport viewport, viewportUI;
     private Level level;
@@ -46,10 +45,10 @@ public class Game implements Screen {
 
         camera = new OrthographicCamera();
         camera.setToOrtho(false);
-        int totalMapWidth = TILE_SIZE * 16;
-        int totalMapHeight = TILE_SIZE * 9;
+        int totalMapWidth = 16;
+        int totalMapHeight = 9;
         viewport = new FitViewport(totalMapWidth, totalMapHeight, camera);
-        camera.position.set(totalMapWidth / 2f,totalMapHeight / 2f,0);
+        camera.position.set(totalMapWidth / 2f,8,0);
         camera.zoom = 1f;
 
         cameraUI = new OrthographicCamera();

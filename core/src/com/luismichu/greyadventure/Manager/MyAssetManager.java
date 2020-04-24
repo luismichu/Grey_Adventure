@@ -69,6 +69,7 @@ public class MyAssetManager {
             manager.load(assetDescriptor);
 
         manager.finishLoading();
+        queue.clear();
     }
 
     public float getProgress(){
@@ -120,6 +121,9 @@ public class MyAssetManager {
         public static final Array<MyAssetDescriptor> greyStanding = new Array<>();
         public static final Array<MyAssetDescriptor> greyRunningL = new Array<>();
         public static final Array<MyAssetDescriptor> greyRunningR = new Array<>();
+        public static final Array<MyAssetDescriptor> enemyRedAttack = new Array<>();
+        public static final Array<MyAssetDescriptor> enemyGreenAttack = new Array<>();
+        public static final Array<MyAssetDescriptor> enemyBlueAttack = new Array<>();
         public static final Array<MyAssetDescriptor> dialogueBox = new Array<>();
         public static final Array<MyAssetDescriptor> music = new Array<>();
         public static final MyAssetDescriptor textSound = new MyAssetDescriptor(Assets.TEXT_SOUND, Sound.class);
@@ -138,6 +142,15 @@ public class MyAssetManager {
 
             for (int i = 0; i < Assets.GREY_RUNNING_NUM; i++)
                 greyRunningR.add(new MyAssetDescriptor(Assets.GREY_RUNNING_R + i + Assets.GREY_RUNNING_EXT, Texture.class));
+
+            for (int i = 0; i < Assets.ENEMY_ATTACK_NUM; i++)
+                enemyRedAttack.add(new MyAssetDescriptor(Assets.ENEMY_RED_ATTACK + i + Assets.ENEMY_ATTACK_EXT, Texture.class));
+
+            for (int i = 0; i < Assets.ENEMY_ATTACK_NUM; i++)
+                enemyGreenAttack.add(new MyAssetDescriptor(Assets.ENEMY_GREEN_ATTACK + i + Assets.ENEMY_ATTACK_EXT, Texture.class));
+
+            for (int i = 0; i < Assets.ENEMY_ATTACK_NUM; i++)
+                enemyBlueAttack.add(new MyAssetDescriptor(Assets.ENEMY_BLUE_ATTACK + i + Assets.ENEMY_ATTACK_EXT, Texture.class));
 
             for (int i = 0; i < Assets.DIALOGUE_BOX_NUM; i++)
                 dialogueBox.add(new MyAssetDescriptor(Assets.DIALOGUE_BOX + i + Assets.DIALOGUE_BOX_EXT, Texture.class));
@@ -162,6 +175,12 @@ public class MyAssetManager {
             public static final int GREY_RUNNING_NUM = 6;
             public static final String GREY_RUNNING_EXT = ".png";
             public static final String GREY_RUNNING_R = "sprites/running/grey_running_r_";
+
+            public static final String ENEMY_RED_ATTACK = "sprites/enemy/red/attack_";
+            public static final String ENEMY_GREEN_ATTACK = "sprites/enemy/green/attack_";
+            public static final String ENEMY_BLUE_ATTACK = "sprites/enemy/blue/attack_";
+            public static final int ENEMY_ATTACK_NUM = 4;
+            public static final String ENEMY_ATTACK_EXT = ".png";
 
             public static final String SKIN = "skins/craftacular/skin/craftacular-ui.json";
 

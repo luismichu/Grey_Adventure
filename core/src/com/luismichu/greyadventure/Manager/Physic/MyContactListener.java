@@ -5,49 +5,30 @@ import com.badlogic.gdx.physics.box2d.ContactImpulse;
 import com.badlogic.gdx.physics.box2d.ContactListener;
 import com.badlogic.gdx.physics.box2d.Manifold;
 
-public class MyContactListener implements ContactListener {
-    private int numFootContacts = 0;
-    private MyContactListener contactListener;
+public abstract class MyContactListener implements ContactListener {
+    protected boolean footOnGround;
+    protected boolean dead;
 
-    public MyContactListener getInstance(){
-        if(contactListener == null)
-            contactListener = new MyContactListener();
-
-        return contactListener;
-    }
-
-    MyContactListener(){
-    }
+    public abstract void solve(short data1, short data2);
 
     @Override
     public void beginContact(Contact contact) {
-        //TODO switch
-        Object fixtureUserData = contact.getFixtureA().getUserData();
-        if ((int)fixtureUserData == Physic.DATA_FOOT)
-            numFootContacts++;
+        Object fixtureUserData1 = contact.getFixtureA().getUserData();
+        Object fixtureUserData2 = contact.getFixtureB().getUserData();
+        short data1 = (short) fixtureUserData1;
+        short data2 = (short) fixtureUserData2;
 
-        fixtureUserData = contact.getFixtureB().getUserData();
-        if ((int)fixtureUserData == Physic.DATA_FOOT)
-            numFootContacts++;
-
-        //if(numFootContacts > 0)
+        solve(data1, data2);
     }
 
     @Override
     public void endContact(Contact contact) {
-        Object fixtureUserData = contact.getFixtureA().getUserData();
-        if ((int)fixtureUserData == Physic.DATA_FOOT)
-            numFootContacts--;
+        Object fixtureUserData1 = contact.getFixtureA().getUserData();
+        Object fixtureUserData2 = contact.getFixtureB().getUserData();
+        short data1 = (short) fixtureUserData1;
+        short data2 = (short) fixtureUserData2;
 
-        fixtureUserData = contact.getFixtureB().getUserData();
-        if ((int)fixtureUserData == Physic.DATA_FOOT)
-            numFootContacts--;
-
-        //if(numFootContacts == 0)
-    }
-
-    public int getNumFootContacts() {
-        return numFootContacts;
+        solve(data1, data2);
     }
 
     @Override
@@ -59,4 +40,18 @@ public class MyContactListener implements ContactListener {
     public void postSolve(Contact contact, ContactImpulse impulse) {
 
     }
+
+    protected boolean check(short data1, short data2, short data3, short data4){
+        return ((data1 == data3 || data2 == data3) && (data1 == data4 || data2 == data4));
+    }
+
+    protected boolean check(short data1, short data2, short data3){
+        return (data1 == data3 || data2 == data3);
+    }
+
+    public boolean isFootOnGround() {
+        return footOnGround;
+    }
+
+    public boolean isDead(){ return dead; }
 }
