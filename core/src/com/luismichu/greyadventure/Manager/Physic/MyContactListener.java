@@ -7,7 +7,8 @@ import com.badlogic.gdx.physics.box2d.Manifold;
 
 public abstract class MyContactListener implements ContactListener {
     protected boolean footOnGround;
-    protected boolean dead;
+    public boolean dead;
+    public boolean damage;
 
     public abstract void solve(short data1, short data2);
 
@@ -54,4 +55,8 @@ public abstract class MyContactListener implements ContactListener {
     }
 
     public boolean isDead(){ return dead; }
+
+    public boolean isDamaged() {
+        return damage;
+    }
 }

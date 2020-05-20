@@ -125,7 +125,7 @@ public class Grey extends PhysicObject {
         }
         else {
             batch.begin();
-            sprite.draw(batch);
+            batch.draw(sprite.getTexture(), sprite.getX(), sprite.getY(), sprite.getWidth(), sprite.getHeight());
         }
         batch.end();
     }
@@ -251,6 +251,10 @@ public class Grey extends PhysicObject {
 
     public void notOnGround(){
         onGround = false;
+    }
+
+    public void setPos(Vector2 pos){
+        body.setTransform(pos, 0);
     }
 
     public Vector2 getPos(){

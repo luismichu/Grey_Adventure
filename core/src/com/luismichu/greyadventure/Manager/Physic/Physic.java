@@ -9,10 +9,10 @@ public class Physic{
     public static final int VELOCITY_ITERATIONS = 10, POSITION_ITERATIONS = 10;
 
     public static final short DATA_GROUND = 1;
-    public static final short DATA_GREY = 2;
-    public static final short DATA_FOOT = 3;
-    public static final short DATA_DEATH = 4;
-    public static final short DATA_ENEMY = 5;
+    public static final short DATA_GREY = 1 << 2;
+    public static final short DATA_FOOT = 1 << 3;
+    public static final short DATA_DEATH = 1 << 4;
+    public static final short DATA_ENEMY = 1 << 5;
 
     public static final String OBJECT_LAYER = "O1";
     public static final String DEATH_LAYER = "death";

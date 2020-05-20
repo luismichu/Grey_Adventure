@@ -1,7 +1,6 @@
 package com.luismichu.greyadventure.Manager;
 
 import com.badlogic.gdx.assets.AssetDescriptor;
-import com.badlogic.gdx.assets.AssetLoaderParameters;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
@@ -102,6 +101,14 @@ public class MyAssetManager {
         return arrayMusic;
     }
 
+    public Array<Sound> getSounds(Array<MyAssetDescriptor> arrayAssetDescriptorSound){
+        Array<Sound> arraySound = new Array<>();
+
+        for(MyAssetDescriptor t : arrayAssetDescriptorSound)
+            arraySound.add((Sound) manager.get(t));
+        return arraySound;
+    }
+
     public Sound getSound(MyAssetDescriptor assetDescriptorSound){
         return (Sound) manager.get(assetDescriptorSound);
     }
@@ -126,7 +133,9 @@ public class MyAssetManager {
         public static final Array<MyAssetDescriptor> enemyBlueAttack = new Array<>();
         public static final Array<MyAssetDescriptor> dialogueBox = new Array<>();
         public static final Array<MyAssetDescriptor> music = new Array<>();
+        public static final Array<MyAssetDescriptor> deathPlayerSound = new Array<>();
         public static final MyAssetDescriptor textSound = new MyAssetDescriptor(Assets.TEXT_SOUND, Sound.class);
+        public static final MyAssetDescriptor deathSound = new MyAssetDescriptor(Assets.DEATH_SOUND, Sound.class);
         public static final MyAssetDescriptor skin = new MyAssetDescriptor(Assets.SKIN, Skin.class);
         public static final MyAssetDescriptor mainMenuBackground = new MyAssetDescriptor(Assets.MAIN_MENU_BACKGROUND, Texture.class);
         public static final MyAssetDescriptor greyAdventureLogo = new MyAssetDescriptor(Assets.GREY_ADVENTURE_LOGO, Texture.class);
@@ -154,6 +163,9 @@ public class MyAssetManager {
 
             for (int i = 0; i < Assets.DIALOGUE_BOX_NUM; i++)
                 dialogueBox.add(new MyAssetDescriptor(Assets.DIALOGUE_BOX + i + Assets.DIALOGUE_BOX_EXT, Texture.class));
+
+            for (int i = 0; i < Assets.DEATH_PLAYER_NUM; i++)
+                deathPlayerSound.add(new MyAssetDescriptor(Assets.DEAT_PLAYER_SOUND + i + Assets.DEATH_PLAYER_EXT, Sound.class));
 
             dialogMap1.add("Hey, bienvenido viajero");
             dialogMap1.add("Como te va la vida");
@@ -189,6 +201,10 @@ public class MyAssetManager {
 
             public static final String MUSIC = "musica";
             public static final String TEXT_SOUND = "sounds/text3.wav";
+            public static final String DEATH_SOUND = "sounds/death.wav";
+            public static final String DEAT_PLAYER_SOUND = "sounds/player/d_";
+            public static final int DEATH_PLAYER_NUM = 11;
+            public static final String DEATH_PLAYER_EXT = ".wav";
 
             public static final String DIALOGUE_BOX = "sprites/dialoguebox_";
             public static final int DIALOGUE_BOX_NUM = 2;

@@ -48,13 +48,13 @@ public class Enemy extends PhysicObject {
         sprite.setBounds(0, 0, size * defAspectRatio, size);
         sprite.setOrigin(sprite.getWidth() / 2, sprite.getHeight() / 2);
         sprite.setPosition((body.getPosition().x) - sprite.getWidth()/2,
-                (body.getPosition().y) -sprite.getHeight()/2 - 0.1f);
+                (body.getPosition().y) -sprite.getHeight()/2);
         sprite.setRotation((float)Math.toDegrees(body.getAngle()));
     }
 
     public void draw(SpriteBatch batch){
         batch.begin();
-        sprite.draw(batch);
+        batch.draw(sprite.getTexture(), sprite.getX(), sprite.getY(), sprite.getWidth(), sprite.getHeight());
         batch.end();
     }
 }
