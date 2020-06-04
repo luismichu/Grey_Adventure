@@ -34,8 +34,9 @@ public class Enemy extends PhysicObject {
         setDensity(3);
         setFriction(1);
         setRestitution(0.1f);
-        setGroupIndex((short) -1);
+        setGroupIndex(Physic.GROUP_GROUND);
         setPosition(pos);
+        setFixedRotation(true);
         setSize(new Vector2(sprite.getWidth() / 2.5f, sprite.getHeight() / 2));
         setUserData(Physic.DATA_ENEMY);
         createObject(false);

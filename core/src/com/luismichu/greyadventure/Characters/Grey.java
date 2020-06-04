@@ -2,6 +2,7 @@ package com.luismichu.greyadventure.Characters;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
@@ -18,16 +19,18 @@ import com.luismichu.greyadventure.Manager.Physic.PhysicObject;
 
 public class Grey extends PhysicObject {
     private Sprite sprite;
+    private Texture heart, heart_empty;
     private Animation<Texture> animation, animStanding, animRunningLeft, animRunningRight;
     private MyContactListener contactListener;
     private MyAssetManager assetManager;
     private float size = 1.75f;
-    private float defAspectRatio;
-    private float elapsedTime = 0, factor;
-    private boolean canJump, canDash, onGround, dashing;
+    private float defAspectRatio, heartAspectRatio;
+    private float elapsedTime = 0, elapsedTimeInvincible = 0, factor;
+    private boolean canJump, canDash, onGround, dashing, invincible, dead, heartBlink;
     private Array<Sprite> dashSprites;
     private Vector2 linearVelocity;
     private float speed, jump, dashX, dashY;
+    private int lifePoints;
     private Array<Integer> keys;
 
     public Grey(Vector2 pos, MyAssetManager assetManager, MyContactListener contactListener, Array<Integer> keys){
@@ -51,29 +54,33 @@ public class Grey extends PhysicObject {
         sprite.setOrigin(sprite.getWidth() / 2, sprite.getHeight() / 2);
         sprite.setPosition(pos.x, pos.y);
 
+        heart = assetManager.getTexture(MyAssetManager.AssetDescriptors.heart);
+        heart_empty = assetManager.getTexture(MyAssetManager.AssetDescriptors.heart_empty);
+        heartAspectRatio = (float)heart.getWidth() / heart.getHeight();
+
         speed = 5;
         jump = 6;
 
         setDensity(3);
         setFriction(0);
         setRestitution(0);
-        setSize(new Vector2(sprite.getWidth() / 2.5f, sprite.getHeight() / 2 - 0.1f));
+        setSize(new Vector2(sprite.getWidth() / 2.5f, sprite.getHeight() / 2f));
         setPosition(pos);
         setUserData(Physic.DATA_GREY);
         setFixedRotation(true);
-        setGroupIndex((short) -1);
+        setGroupIndex(Physic.GROUP_GROUND);
         createObject(false);
 
-        setSize(new Vector2(sprite.getWidth() / 3.5f, 0.2f));
+        setSize(new Vector2(sprite.getWidth() / 2.6f, 0.2f));
         setUserData(Physic.DATA_FOOT);
         createFixture(new Vector2(0, -sprite.getHeight() / 2f - 0.2f), true);
 
-        setSize(new Vector2(sprite.getWidth() / 3.5f, 0.1f));
+        setSize(new Vector2(sprite.getWidth() / 2.5f, 0.1f));
         setUserData(Physic.DATA_GREY);
-        setDensity(100);
-        setFriction(5);
+        setDensity(1);
+        setFriction(20);
         setRestitution(0);
-        createFixture(new Vector2(0, -sprite.getHeight() / 2f), false);
+        createCircleFixture(new Vector2(0, -sprite.getHeight() / 3.1f), false);
 
         this.contactListener = contactListener;
 
@@ -85,6 +92,11 @@ public class Grey extends PhysicObject {
         dashSprites = new Array<>();
         dashing = false;
         canDash = true;
+
+        lifePoints = 3;
+        invincible = false;
+        dead = false;
+        heartBlink = false;
     }
 
     public void update(){
@@ -94,7 +106,7 @@ public class Grey extends PhysicObject {
         sprite.setBounds(0, 0, size * defAspectRatio, size / factor);
         sprite.setOrigin(sprite.getWidth() / 2, sprite.getHeight() / 2);
         sprite.setPosition((body.getPosition().x) - sprite.getWidth()/2,
-                (body.getPosition().y) -sprite.getHeight()/2 * factor - 0.1f);
+                (body.getPosition().y) -sprite.getHeight()/2 * factor - 0.01f);
         sprite.setRotation((float)Math.toDegrees(body.getAngle()));
 
         if(contactListener.isFootOnGround())
@@ -130,6 +142,29 @@ public class Grey extends PhysicObject {
         batch.end();
     }
 
+    public void drawHearts(SpriteBatch batch, OrthographicCamera camera){
+        batch.begin();
+        for(int i=0;i<getLifePoints();i++)
+            batch.draw(heart, (0.055f  * i + 0.015f) * camera.viewportWidth, 0.85f * camera.viewportHeight, 0.05f * camera.viewportWidth, 0.05f * camera.viewportWidth * heartAspectRatio);
+        if(heartBlink) {
+            elapsedTimeInvincible += Gdx.graphics.getDeltaTime();
+            if ((int)(elapsedTimeInvincible % 0.2 * 10) == 1) {
+                batch.draw(heart, (0.055f * getLifePoints() + 0.015f) * camera.viewportWidth, 0.85f * camera.viewportHeight, 0.05f * camera.viewportWidth, 0.05f * camera.viewportWidth * heartAspectRatio);
+                for(int i=getLifePoints()+1;i<3;i++) {
+                    if(i >= 0)
+                        batch.draw(heart_empty, (0.055f * i + 0.015f) * camera.viewportWidth, 0.85f * camera.viewportHeight, 0.05f * camera.viewportWidth, 0.05f * camera.viewportWidth * heartAspectRatio);
+                }
+            }
+        }
+
+            for (int i = getLifePoints(); i < 3; i++) {
+                if (i >= 0)
+                    batch.draw(heart_empty, (0.055f * i + 0.015f) * camera.viewportWidth, 0.85f * camera.viewportHeight, 0.05f * camera.viewportWidth, 0.05f * camera.viewportWidth * heartAspectRatio);
+            }
+
+        batch.end();
+    }
+
     public void jump(){
         if(onGround) {
             body.setLinearVelocity(body.getLinearVelocity().x, jump);
@@ -147,7 +182,7 @@ public class Grey extends PhysicObject {
         if(!dashing) {
             animation = animRunningLeft;
             float x = body.getLinearVelocity().x;
-            x -= speed / 5;
+            x -= speed / 10;
             body.setLinearVelocity(Math.max(x, -speed), body.getLinearVelocity().y);
         }
     }
@@ -156,7 +191,7 @@ public class Grey extends PhysicObject {
         if(!dashing) {
             animation = animRunningRight;
             float x = body.getLinearVelocity().x;
-            x += speed / 5;
+            x += speed / 10;
             body.setLinearVelocity(Math.min(x, speed), body.getLinearVelocity().y);
         }
     }
@@ -259,5 +294,42 @@ public class Grey extends PhysicObject {
 
     public Vector2 getPos(){
         return body.getPosition();
+    }
+
+    public void setInvincible(boolean invincible){
+        this.invincible = invincible;
+    }
+
+    public boolean isDead(){
+        return dead;
+    }
+
+    public int getLifePoints(){ return lifePoints; }
+
+    public void damage(){
+        if(!invincible) {
+            if(lifePoints == 0)
+                dead = true;
+            else {
+                invincible = true;
+                lifePoints--;
+                heartBlink = true;
+                Timer.schedule(new Timer.Task() {
+                                   @Override
+                                   public void run() {
+                                       invincible = false;
+                                       heartBlink = false;
+                                       elapsedTimeInvincible = 0;
+                                   }
+                               }, 0.4f / Game.WORLD_SPEED
+                        , 0
+                        , 0);
+            }
+        }
+    }
+
+    public void regenerate(){
+        dead = false;
+        lifePoints = 3;
     }
 }

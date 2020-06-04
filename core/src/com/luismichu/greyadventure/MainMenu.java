@@ -11,10 +11,7 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
-import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.InputListener;
-import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.*;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
@@ -25,8 +22,6 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.luismichu.greyadventure.Manager.MyAssetManager;
 import com.luismichu.greyadventure.Manager.MyPreferenceManager;
 import com.luismichu.greyadventure.Manager.MyShaderLoader;
-
-import java.security.InvalidKeyException;
 
 import static com.badlogic.gdx.graphics.GL20.GL_COLOR_BUFFER_BIT;
 
@@ -41,7 +36,7 @@ public class MainMenu implements Screen {
     private Stage stage;
     private Table optionsTable, menuTable;
     private Skin skin;
-    private boolean fullscreen, fading, movingMenu, movingOptions, starting;
+    private boolean fading, movingMenu, movingOptions, starting = true;
 
     private final int TILE_SIZE = 32;
     private float alpha, y;
@@ -51,8 +46,9 @@ public class MainMenu implements Screen {
 
     private float elapsedTime;
 
-    public MainMenu(GreyAdventure greyAdventure){
+    public MainMenu(GreyAdventure greyAdventure, boolean starting){
         this.greyAdventure = greyAdventure;
+        this.starting = starting;
     }
 
     @Override
@@ -91,11 +87,9 @@ public class MainMenu implements Screen {
         logo = assetManager.getTexture(MyAssetManager.AssetDescriptors.greyAdventureLogo);
         logo.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 
-        fullscreen = false;
         fading = false;
         movingMenu = false;
         movingOptions = false;
-        starting = true;
 
         elapsedTime = 0;
         alpha = 1;
@@ -109,7 +103,7 @@ public class MainMenu implements Screen {
 
     @Override
     public void render(float delta) {
-        delta /= 1;
+        delta /= 1; //TODO
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL_COLOR_BUFFER_BIT);
 
@@ -316,6 +310,17 @@ public class MainMenu implements Screen {
         final TextButton btVSync = new TextButton("Sincronizacion vertical: " + (preferenceManager.isVSync() ? "ON" : "OFF") ,skin);
         btVSync.getLabel().setFontScale(0.85f);
 
+        final TextButton btTextSpeed = new TextButton("",skin);
+        String textSpeedText = "Velocidad del texto: ";
+        if(preferenceManager.getTextSpeed() == MyPreferenceManager.Preference.SLOW)
+            textSpeedText += "Lento";
+        else if(preferenceManager.getTextSpeed() == MyPreferenceManager.Preference.MEDIUM)
+            textSpeedText += "Medio";
+        else if(preferenceManager.getTextSpeed() == MyPreferenceManager.Preference.FAST)
+            textSpeedText += "Rapido";
+        btTextSpeed.setText(textSpeedText);
+        btTextSpeed.getLabel().setFontScale(0.85f);
+
         TextButton btVolver = new TextButton("Volver",skin);
         btVolver.getLabel().setFontScale(0.85f);
 
@@ -336,6 +341,9 @@ public class MainMenu implements Screen {
         optionsTable.row();
         optionsTable.add(btFullScreen).width(500).height(70).padBottom(30).padRight(15);
         optionsTable.add(btVSync).width(500).height(70).padBottom(30);
+
+        optionsTable.row();
+        optionsTable.add(btTextSpeed).width(500).height(70).padBottom(30).padRight(15);
 
         optionsTable.row();
         optionsTable.add(btVolver).width(500).height(70).padTop(20).colspan(2);
@@ -381,6 +389,27 @@ public class MainMenu implements Screen {
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
                 preferenceManager.setVSync(!preferenceManager.isVSync());
                 btVSync.setText("Sincronizacion vertical: " + (preferenceManager.isVSync() ? "ON" : "OFF"));
+                super.touchUp(event, x, y, pointer, button);
+            }
+        });
+
+        btTextSpeed.addListener(new ClickListener(){
+            @Override
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                String textSpeedText = "Velocidad del texto: ";
+                if(preferenceManager.getTextSpeed() == MyPreferenceManager.Preference.SLOW) {
+                    textSpeedText += "Medio";
+                    preferenceManager.setTextSpeed(MyPreferenceManager.Preference.MEDIUM);
+                }
+                else if(preferenceManager.getTextSpeed() == MyPreferenceManager.Preference.MEDIUM) {
+                    textSpeedText += "Rapido";
+                    preferenceManager.setTextSpeed(MyPreferenceManager.Preference.FAST);
+                }
+                else if(preferenceManager.getTextSpeed() == MyPreferenceManager.Preference.FAST) {
+                    textSpeedText += "Lento";
+                    preferenceManager.setTextSpeed(MyPreferenceManager.Preference.SLOW);
+                }
+                btTextSpeed.setText(textSpeedText);
                 super.touchUp(event, x, y, pointer, button);
             }
         });
@@ -463,27 +492,5 @@ public class MainMenu implements Screen {
         skin.dispose();
         tableBuffer1.dispose();
         tableBuffer2.dispose();
-    }
-
-    private class InputListener extends com.badlogic.gdx.scenes.scene2d.InputListener {
-        @Override
-        public boolean keyDown(InputEvent event, int keycode) {
-            switch(keycode){
-                case Input.Keys.SPACE:
-                    fullscreen = !fullscreen;
-                    break;
-
-                case Input.Keys.ESCAPE:
-                    Gdx.app.exit();
-
-                case Input.Keys.UP:
-                    alpha += 0.1f;
-                    break;
-
-                case Input.Keys.DOWN:
-                    alpha -= 0.1f;
-            }
-            return super.keyDown(event, keycode);
-        }
     }
 }

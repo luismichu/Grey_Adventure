@@ -8,40 +8,34 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.luismichu.greyadventure.Levels.Level;
 import com.luismichu.greyadventure.Levels.Level1;
-import com.luismichu.greyadventure.Manager.Dialog;
-import com.luismichu.greyadventure.Manager.MyAssetManager;
-import com.luismichu.greyadventure.Manager.MyPreferenceManager;
+import com.luismichu.greyadventure.Manager.*;
 import com.luismichu.greyadventure.Manager.Physic.MyPhysicManager;
 
 import static com.badlogic.gdx.graphics.GL20.GL_COLOR_BUFFER_BIT;
 
 public class Game implements Screen {
     private GreyAdventure greyAdventure;
-    private SpriteBatch batch;
-    private ShapeRenderer shapeRenderer;
     private MyAssetManager assetManager;
     private MyPreferenceManager preferenceManager;
     private MyPhysicManager physicManager;
     private OrthographicCamera camera, cameraUI;
     private FitViewport viewport, viewportUI;
+    private GameState gameState;
     private Level level;
 
     public final static int TILE_SIZE = 32;
     public static float WORLD_SPEED = 1f;
 
-    public Game(GreyAdventure greyAdventure){
+    public Game(GreyAdventure greyAdventure, GameState gameState){
         this.greyAdventure = greyAdventure;
+        this.gameState = gameState;
     }
 
     @Override
     public void show() {
-        batch = new SpriteBatch();
-
         assetManager = new MyAssetManager();
         preferenceManager = new MyPreferenceManager();
         physicManager = MyPhysicManager.getInstance();
-
-        assetManager.loadGame();
 
         camera = new OrthographicCamera();
         camera.setToOrtho(false);
@@ -58,8 +52,25 @@ public class Game implements Screen {
         cameraUI.position.set(resolution[0] / 2f,resolution[1] / 2f,0);
         cameraUI.zoom = 1f;
 
-        level = Level1.create(assetManager, preferenceManager, physicManager, camera, cameraUI);
+        if(gameState == null)
+            level = Level1.create(assetManager, preferenceManager, physicManager, camera, cameraUI, gameState);
+        else {
+            switch (gameState.level) {
+                case 1:
+                    level = Level1.create(assetManager, preferenceManager, physicManager, camera, cameraUI, gameState);
+                    break;
+
+                case 2:
+                    //level = Level2.create(assetManager, preferenceManager, physicManager, camera, cameraUI, gameState);
+                    break;
+
+                case 3:
+                    //level = Level3.create(assetManager, preferenceManager, physicManager, camera, cameraUI, gameState);
+                    break;
+            }
+        }
         Gdx.input.setInputProcessor(level);
+        Gdx.input.setCursorCatched(true);
     }
 
     @Override
@@ -69,6 +80,11 @@ public class Game implements Screen {
 
         level.update();
         level.draw();
+
+        if(level.hasFinished()) {
+            greyAdventure.setScreen(new MainMenu(greyAdventure, false));
+            dispose();
+        }
     }
 
     @Override

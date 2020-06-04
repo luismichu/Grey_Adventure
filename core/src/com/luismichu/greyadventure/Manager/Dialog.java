@@ -76,7 +76,7 @@ public class Dialog {
         currentMessage = message.substring(0, Math.min(charNum, message.length()));
         label.setText(currentMessage);
 
-        if(!lastMessage.equals(currentMessage) && !currentMessage.substring(currentMessage.length() - 1).equals(" ")) {
+        if(!lastMessage.equals(currentMessage) && !currentMessage.endsWith(" ")) {
             textSound.stop();
             textSound.play(volume);
         }
@@ -99,6 +99,17 @@ public class Dialog {
         currentMessage = "";
         elapsedTime = 0;
         background = backgrounds.get(0);
+    }
+
+    public void setMessages(Array<String> newMessages){
+        setMessage(newMessages.first());
+        messages.clear();
+        messages.addAll(newMessages);
+        messages.removeValue(messages.first(), false);
+    }
+
+    public void addMessage(String message){
+        messages.add(message);
     }
 
     public boolean next(){

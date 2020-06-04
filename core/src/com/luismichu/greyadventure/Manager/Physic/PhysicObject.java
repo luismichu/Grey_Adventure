@@ -1,10 +1,7 @@
 package com.luismichu.greyadventure.Manager.Physic;
 
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.Body;
-import com.badlogic.gdx.physics.box2d.BodyDef;
-import com.badlogic.gdx.physics.box2d.FixtureDef;
-import com.badlogic.gdx.physics.box2d.PolygonShape;
+import com.badlogic.gdx.physics.box2d.*;
 import com.luismichu.greyadventure.Manager.Physic.MyPhysicManager;
 
 public class PhysicObject {
@@ -52,6 +49,25 @@ public class PhysicObject {
             shape.setAsBox(size.x, size.y);
         else
             shape.setAsBox(size.x, size.y, pos, 0);
+
+        FixtureDef fixtureDef = new FixtureDef();
+        fixtureDef.shape = shape;
+        fixtureDef.isSensor = sensor;
+        fixtureDef.density = density;
+        fixtureDef.restitution = restitution;
+        fixtureDef.friction = friction;
+        fixtureDef.filter.groupIndex = groupIndex;
+
+        body.createFixture(fixtureDef).setUserData(userData);
+
+        shape.dispose();
+    }
+
+    public void createCircleFixture(Vector2 pos, boolean sensor){
+        CircleShape shape = new CircleShape();
+        shape.setRadius(size.x);
+        if(pos != null)
+            shape.setPosition(pos);
 
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
@@ -125,4 +141,8 @@ public class PhysicObject {
     public void setUserData(short userData) {
         this.userData = userData;
     }
+
+    public void setStatic(){ body.setType(BodyDef.BodyType.StaticBody); }
+
+    public void setDynamic(){ body.setType(BodyDef.BodyType.DynamicBody); }
 }

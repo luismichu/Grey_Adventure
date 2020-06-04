@@ -1,5 +1,6 @@
 package com.luismichu.greyadventure.Manager.Physic;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.World;
@@ -27,7 +28,7 @@ public class MyPhysicManager {
     }
 
     public void update(float worldSpeed){
-        world.step(Physic.TIME_STEP * worldSpeed, Physic.VELOCITY_ITERATIONS, Physic.POSITION_ITERATIONS);
+        world.step(Physic.TIME_STEP * worldSpeed * Gdx.graphics.getDeltaTime(), Physic.VELOCITY_ITERATIONS, Physic.POSITION_ITERATIONS);
     }
 
     public World getWorld(){

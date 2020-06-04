@@ -49,18 +49,18 @@ public class MyPreferenceManager {
         prefs.putFloat(Preference.VOLUME, percentage / 100f);
     }
 
-    /**TODO update
-     * @return Vector2 with resolution width and height.
+    /**
+     * @return int[] with resolution's width and height.
      */
     public int[] getResolution(){
         return new int[]{prefs.getInteger(Preference.RESOLUTION_WIDTH, Preference.DEFAULT_WIDTH),
                 prefs.getInteger(Preference.RESOLUTION_HEIGHT, Preference.DEFAULT_HEIGHT)};
     }
 
-    /**TODO update
-     * @param resolution Vector2 with resolution width and height.
+    /**
+     * @param resolution int[] with resolution's width and height.
      */
-    public void setResolution(Integer[] resolution){
+    public void setResolution(int[] resolution){
         prefs.putInteger(Preference.RESOLUTION_WIDTH, resolution[0]);
         prefs.putInteger(Preference.RESOLUTION_HEIGHT, resolution[1]);
     }
@@ -109,7 +109,7 @@ public class MyPreferenceManager {
     /**
      * Hardcoded Strings with names of preferences.
      */
-    private static class Preference{
+    public static class Preference{
         public static final String PREFERENCE = "myPrefs";
         public static final String MUSIC = "music";
         public static final String VOLUME = "volume";

@@ -128,6 +128,8 @@ public class MyAssetManager {
         public static final Array<MyAssetDescriptor> greyStanding = new Array<>();
         public static final Array<MyAssetDescriptor> greyRunningL = new Array<>();
         public static final Array<MyAssetDescriptor> greyRunningR = new Array<>();
+        public static final MyAssetDescriptor heart = new MyAssetDescriptor(Assets.HEART, Texture.class);
+        public static final MyAssetDescriptor heart_empty = new MyAssetDescriptor(Assets.HEART_EMPTY, Texture.class);
         public static final Array<MyAssetDescriptor> enemyRedAttack = new Array<>();
         public static final Array<MyAssetDescriptor> enemyGreenAttack = new Array<>();
         public static final Array<MyAssetDescriptor> enemyBlueAttack = new Array<>();
@@ -140,7 +142,8 @@ public class MyAssetManager {
         public static final MyAssetDescriptor mainMenuBackground = new MyAssetDescriptor(Assets.MAIN_MENU_BACKGROUND, Texture.class);
         public static final MyAssetDescriptor greyAdventureLogo = new MyAssetDescriptor(Assets.GREY_ADVENTURE_LOGO, Texture.class);
         public static final MyAssetDescriptor map1 = new MyAssetDescriptor(Assets.MAP1, TiledMap.class);
-        public static final Array<String> dialogMap1 = new Array<>();
+        public static final MyAssetDescriptor map2 = new MyAssetDescriptor(Assets.MAP2, TiledMap.class);
+        public static final MyAssetDescriptor map3 = new MyAssetDescriptor(Assets.MAP3, TiledMap.class);
 
         private AssetDescriptors(){
             for (int i = 0; i < Assets.GREY_STANDING_NUM; i++)
@@ -166,11 +169,6 @@ public class MyAssetManager {
 
             for (int i = 0; i < Assets.DEATH_PLAYER_NUM; i++)
                 deathPlayerSound.add(new MyAssetDescriptor(Assets.DEAT_PLAYER_SOUND + i + Assets.DEATH_PLAYER_EXT, Sound.class));
-
-            dialogMap1.add("Hey, bienvenido viajero");
-            dialogMap1.add("Como te va la vida");
-            dialogMap1.add("Espero que bien");
-            dialogMap1.add("A mi tambien. Gracias por preguntar!");
         }
 
         public static void initialize(){
@@ -187,6 +185,9 @@ public class MyAssetManager {
             public static final int GREY_RUNNING_NUM = 6;
             public static final String GREY_RUNNING_EXT = ".png";
             public static final String GREY_RUNNING_R = "sprites/running/grey_running_r_";
+
+            public static final String HEART = "sprites/heart.png";
+            public static final String HEART_EMPTY = "sprites/heart_empty.png";
 
             public static final String ENEMY_RED_ATTACK = "sprites/enemy/red/attack_";
             public static final String ENEMY_GREEN_ATTACK = "sprites/enemy/green/attack_";

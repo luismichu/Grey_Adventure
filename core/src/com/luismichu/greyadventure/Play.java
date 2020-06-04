@@ -9,12 +9,15 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.luismichu.greyadventure.Manager.GameState;
 import com.luismichu.greyadventure.Manager.MyAssetManager;
+import com.luismichu.greyadventure.Manager.MyDatabaseManager;
 import com.luismichu.greyadventure.Manager.MyPreferenceManager;
 
 import static com.badlogic.gdx.graphics.GL20.GL_COLOR_BUFFER_BIT;
@@ -89,24 +92,29 @@ public class Play implements Screen {
         shapeRenderer.setProjectionMatrix(cameraUI.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
 
-        for(Actor t : stage.getActors())
-            shapeRenderer.rect(t.getX(), t.getY(), t.getWidth(), t.getHeight());
-
+        for(Actor t : stage.getActors()) {
+            if(t.getClass() != Label.class)
+                shapeRenderer.rect(t.getX(), t.getY(), t.getWidth(), t.getHeight());
+        }
         shapeRenderer.end();
 
         Gdx.gl.glDisable(GL20.GL_BLEND);
     }
 
     private void createTable() {
+        final GameState gameState1 = MyDatabaseManager.read(1);
+        final GameState gameState2 = MyDatabaseManager.read(2);
+        final GameState gameState3 = MyDatabaseManager.read(3);
+
         Table t1 = new Table();
         t1.setHeight(cameraUI.viewportHeight * 0.2f);
         t1.setWidth(cameraUI.viewportWidth * 0.8f);
         t1.setPosition(cameraUI.viewportWidth * 0.1f, cameraUI.viewportHeight * 0.65f);
-        Label player1 = new Label("Luismichu", skin);
+        Label player1 = new Label(gameState1 != null ? gameState1.name : "Vacio", skin);
         player1.setAlignment(Align.left);
         player1.setWidth(cameraUI.viewportWidth * 0.2f);
         player1.setHeight(cameraUI.viewportHeight * 0.2f);
-        Label level1 = new Label("Nivel 1", skin);
+        Label level1 = new Label(gameState1 != null ? "Nivel " + gameState1.level : "", skin);
         level1.setAlignment(Align.bottomRight);
         level1.setWidth(cameraUI.viewportWidth * 0.4f);
         t1.row();
@@ -117,11 +125,11 @@ public class Play implements Screen {
         t2.setHeight(cameraUI.viewportHeight * 0.2f);
         t2.setWidth(cameraUI.viewportWidth * 0.8f);
         t2.setPosition(cameraUI.viewportWidth * 0.1f, cameraUI.viewportHeight * 0.4f);
-        Label player2 = new Label("Juancho", skin);
+        Label player2 = new Label(gameState2 != null ? gameState2.name : "Vacio", skin);
         player2.setAlignment(Align.left);
         player2.setWidth(cameraUI.viewportWidth * 0.2f);
         player2.setHeight(cameraUI.viewportHeight * 0.2f);
-        Label level2 = new Label("Nivel 2", skin);
+        Label level2 = new Label(gameState2 != null ? "Nivel " + gameState2.level : "", skin);
         level2.setAlignment(Align.bottomRight);
         level2.setWidth(cameraUI.viewportWidth * 0.4f);
         t2.row();
@@ -132,11 +140,11 @@ public class Play implements Screen {
         t3.setHeight(cameraUI.viewportHeight * 0.2f);
         t3.setWidth(cameraUI.viewportWidth * 0.8f);
         t3.setPosition(cameraUI.viewportWidth * 0.1f, cameraUI.viewportHeight * 0.15f);
-        Label player3 = new Label("Vacio", skin);
+        Label player3 = new Label(gameState3 != null ? gameState3.name : "Vacio", skin);
         player3.setAlignment(Align.left);
         player3.setWidth(cameraUI.viewportWidth * 0.2f);
         player3.setHeight(cameraUI.viewportHeight * 0.2f);
-        Label level3 = new Label("", skin);
+        Label level3 = new Label(gameState3 != null ? "Nivel " + gameState3.level : "", skin);
         level3.setAlignment(Align.bottomRight);
         level3.setWidth(cameraUI.viewportWidth * 0.4f);
         t3.row();
@@ -146,9 +154,38 @@ public class Play implements Screen {
         t1.addListener(new ClickListener(){
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-                System.out.println("tocado");
-                greyAdventure.setScreen(new Game(greyAdventure));
-                dispose();
+                if(gameState1 == null){
+                    insertName(1);
+                } else {
+                    greyAdventure.setScreen(new Game(greyAdventure, gameState1));
+                    dispose();
+                }
+                super.touchUp(event, x, y, pointer, button);
+            }
+        });
+
+        t2.addListener(new ClickListener(){
+            @Override
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                if(gameState2 == null){
+                    insertName(2);
+                } else {
+                    greyAdventure.setScreen(new Game(greyAdventure, gameState2));
+                    dispose();
+                }
+                super.touchUp(event, x, y, pointer, button);
+            }
+        });
+
+        t3.addListener(new ClickListener(){
+            @Override
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                if(gameState3 == null){
+                    insertName(3);
+                } else {
+                    greyAdventure.setScreen(new Game(greyAdventure, gameState3));
+                    dispose();
+                }
                 super.touchUp(event, x, y, pointer, button);
             }
         });
@@ -156,6 +193,64 @@ public class Play implements Screen {
         stage.addActor(t1);
         stage.addActor(t2);
         stage.addActor(t3);
+    }
+
+    private void insertName(final int position){
+        stage.clear();
+
+        final TextField txtField = new TextField("", skin);
+        txtField.setBounds(cameraUI.viewportWidth * 0.15f, cameraUI.viewportHeight * 0.65f, cameraUI.viewportWidth * 0.7f, cameraUI.viewportWidth * 0.05f);
+
+        Label lbl = new Label("Introduce tu nombre de heroe", skin);
+        lbl.setAlignment(Align.center);
+        lbl.setBounds(cameraUI.viewportWidth * 0.15f, cameraUI.viewportHeight * 0.75f, cameraUI.viewportWidth * 0.7f, cameraUI.viewportWidth * 0.05f);
+
+        final Label lblError = new Label("Debe tener entre 4 y 20 caracteres", skin);
+        lblError.setAlignment(Align.center);
+        lblError.setFontScale(0.75f);
+        lblError.setBounds(cameraUI.viewportWidth * 0.15f, cameraUI.viewportHeight * 0.5f, cameraUI.viewportWidth * 0.7f, cameraUI.viewportWidth * 0.05f);
+
+        TextButton btConfirmar = new TextButton("Confirmar", skin);
+        btConfirmar.setBounds(cameraUI.viewportWidth * 0.4f, cameraUI.viewportHeight * 0.1f, cameraUI.viewportWidth * 0.2f, cameraUI.viewportWidth * 0.05f);
+
+        TextButton btCancelar = new TextButton("Cancelar", skin);
+        btCancelar.getLabel().setFontScale(0.7f);
+        btCancelar.setBounds(cameraUI.viewportWidth * 0.05f, cameraUI.viewportHeight * 0.06f, cameraUI.viewportWidth * 0.1f, cameraUI.viewportWidth * 0.04f);
+
+        stage.addActor(txtField);
+        stage.addActor(lbl);
+        stage.addActor(btConfirmar);
+        stage.addActor(btCancelar);
+        stage.setKeyboardFocus(txtField);
+
+        btConfirmar.addListener(new ClickListener(){
+            @Override
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                String name = txtField.getText();
+                if(name == null || name.isEmpty() || name.trim().isEmpty()){
+                    System.out.println("maaal");
+                    if(!stage.getActors().contains(lblError, false))
+                        stage.addActor(lblError);
+                } else {
+                    GameState gameState = new GameState(position, name, 1);
+                    MyDatabaseManager.insert(gameState);
+                    greyAdventure.setScreen(new Game(greyAdventure, gameState));
+                    dispose();
+                }
+
+                super.touchUp(event, x, y, pointer, button);
+            }
+        });
+
+        btCancelar.addListener(new ClickListener(){
+            @Override
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                stage.clear();
+                createTable();
+
+                super.touchUp(event, x, y, pointer, button);
+            }
+        });
     }
 
     @Override
