@@ -1,8 +1,9 @@
 package com.luismichu.greyadventure;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Pixmap;
@@ -10,18 +11,14 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
-import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.scenes.scene2d.*;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
-import com.badlogic.gdx.utils.Timer;
-import com.badlogic.gdx.utils.viewport.FillViewport;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.luismichu.greyadventure.Manager.MyAssetManager;
 import com.luismichu.greyadventure.Manager.MyPreferenceManager;
-import com.luismichu.greyadventure.Manager.MyShaderLoader;
 
 import static com.badlogic.gdx.graphics.GL20.GL_COLOR_BUFFER_BIT;
 
@@ -36,7 +33,9 @@ public class MainMenu implements Screen {
     private Stage stage;
     private Table optionsTable, menuTable;
     private Skin skin;
-    private boolean fading, movingMenu, movingOptions, starting = true;
+    private boolean fading, movingMenu, movingOptions, starting;
+    private Music musicMainMenu;
+    private Sound selectSound, selectOptionSound;
 
     private final int TILE_SIZE = 32;
     private float alpha, y;
@@ -95,6 +94,18 @@ public class MainMenu implements Screen {
         alpha = 1;
         y = 0;
 
+        musicMainMenu = assetManager.getMusic(MyAssetManager.AssetDescriptors.musicMainMenu);
+        musicMainMenu.setLooping(true);
+        if(preferenceManager.isMusicOn())
+            musicMainMenu.setVolume(preferenceManager.getVolume() / 100f / 4);
+        else
+            musicMainMenu.setVolume(0);
+
+        GreyAdventure.music = musicMainMenu;
+
+        selectSound = assetManager.getSound(MyAssetManager.AssetDescriptors.selectSound);
+        selectOptionSound = assetManager.getSound(MyAssetManager.AssetDescriptors.selectOptionSound);
+
         createMenuTable();
         createOptionsTable();
 
@@ -151,6 +162,7 @@ public class MainMenu implements Screen {
                 }
             }
             else {
+                musicMainMenu.play();
                 batch.setProjectionMatrix(camera.combined);
                 batch.setColor(1, 1, 1, alpha);
                 batch.begin();
@@ -225,6 +237,8 @@ public class MainMenu implements Screen {
         btStart.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                if(preferenceManager.isMusicOn())
+                    selectSound.play(preferenceManager.getVolume() / 100f);
                 fading = true;
 
                 SpriteBatch spriteBatch = new SpriteBatch();
@@ -243,6 +257,8 @@ public class MainMenu implements Screen {
         btSalir.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                if(preferenceManager.isMusicOn())
+                    selectSound.play(preferenceManager.getVolume() / 100f);
                 Gdx.app.exit();
             }
         });
@@ -250,6 +266,8 @@ public class MainMenu implements Screen {
         btOpciones.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                if(preferenceManager.isMusicOn())
+                    selectSound.play(preferenceManager.getVolume() / 100f);
                 if(!fading) {
                     SpriteBatch spriteBatch = new SpriteBatch();
                     tableBuffer1.begin();
@@ -351,6 +369,8 @@ public class MainMenu implements Screen {
         btMusic.addListener(new ClickListener(){
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                if(preferenceManager.isMusicOn())
+                    selectOptionSound.play(preferenceManager.getVolume() / 100f);
                 preferenceManager.setMusic(!preferenceManager.isMusicOn());
                 boolean state = preferenceManager.isMusicOn();
                 btMusic.setText("Musica: " + (state ? "ON" : "OFF"));
@@ -358,10 +378,12 @@ public class MainMenu implements Screen {
                 if(state) {
                     lblVolume.setColor(Color.WHITE);
                     sliVolume.setColor(Color.WHITE);
+                    musicMainMenu.setVolume(preferenceManager.getVolume() / 100f / 4);
                 }
                 else {
                     lblVolume.setColor(Color.GRAY);
                     sliVolume.setColor(Color.GRAY);
+                    musicMainMenu.setVolume(0);
                 }
                 super.touchUp(event, x, y, pointer, button);
             }
@@ -372,12 +394,16 @@ public class MainMenu implements Screen {
             public void changed(ChangeEvent event, Actor actor) {
                 preferenceManager.setVolume((int)sliVolume.getValue());
                 lblVolume.setText("Volumen: " + preferenceManager.getVolume() + "%");
+                if(preferenceManager.isMusicOn())
+                    musicMainMenu.setVolume(preferenceManager.getVolume() / 100f / 4);
             }
         });
 
         btFullScreen.addListener(new ClickListener(){
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                if(preferenceManager.isMusicOn())
+                    selectOptionSound.play(preferenceManager.getVolume() / 100f);
                 preferenceManager.setFullScreen(!preferenceManager.isFullScreen());
                 btFullScreen.setText("Pantalla completa: " + (preferenceManager.isFullScreen() ? "ON" : "OFF"));
                 super.touchUp(event, x, y, pointer, button);
@@ -387,6 +413,8 @@ public class MainMenu implements Screen {
         btVSync.addListener(new ClickListener(){
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                if(preferenceManager.isMusicOn())
+                    selectOptionSound.play(preferenceManager.getVolume() / 100f);
                 preferenceManager.setVSync(!preferenceManager.isVSync());
                 btVSync.setText("Sincronizacion vertical: " + (preferenceManager.isVSync() ? "ON" : "OFF"));
                 super.touchUp(event, x, y, pointer, button);
@@ -396,6 +424,8 @@ public class MainMenu implements Screen {
         btTextSpeed.addListener(new ClickListener(){
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                if(preferenceManager.isMusicOn())
+                    selectOptionSound.play(preferenceManager.getVolume() / 100f);
                 String textSpeedText = "Velocidad del texto: ";
                 if(preferenceManager.getTextSpeed() == MyPreferenceManager.Preference.SLOW) {
                     textSpeedText += "Medio";
@@ -417,6 +447,8 @@ public class MainMenu implements Screen {
         btVolver.addListener(new ClickListener(){
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                if(preferenceManager.isMusicOn())
+                    selectSound.play(preferenceManager.getVolume() / 100f);
                 preferenceManager.flush();
                 if(!fading) {
                     SpriteBatch spriteBatch = new SpriteBatch();

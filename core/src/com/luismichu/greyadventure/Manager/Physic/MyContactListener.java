@@ -11,23 +11,31 @@ public abstract class MyContactListener implements ContactListener {
     protected boolean footOnGround;
     public boolean dead;
     public boolean damage;
+    public boolean end;
+    public int enemy;
 
-    public abstract void solve(Object data1, Object data2);
+    public abstract void solve(Data data1, Data data2);
 
     @Override
     public void beginContact(Contact contact) {
-        Object fixtureUserData1 = contact.getFixtureA().getUserData();
-        Object fixtureUserData2 = contact.getFixtureB().getUserData();
+        Data fixtureUserData1 = (Data) contact.getFixtureA().getUserData();
+        Data fixtureUserData2 = (Data) contact.getFixtureB().getUserData();
 
         solve(fixtureUserData1, fixtureUserData2);
+
+        if(check(fixtureUserData1.data, fixtureUserData2.data, Physic.DATA_FOOT))
+            footOnGround = true;
     }
 
     @Override
     public void endContact(Contact contact) {
-        Object fixtureUserData1 = contact.getFixtureA().getUserData();
-        Object fixtureUserData2 = contact.getFixtureB().getUserData();
+        Data fixtureUserData1 = (Data) contact.getFixtureA().getUserData();
+        Data fixtureUserData2 = (Data) contact.getFixtureB().getUserData();
 
         solve(fixtureUserData1, fixtureUserData2);
+
+        if(check(fixtureUserData1.data, fixtureUserData2.data, Physic.DATA_FOOT))
+            footOnGround = false;
     }
 
     @Override
@@ -48,8 +56,12 @@ public abstract class MyContactListener implements ContactListener {
         return (data1 == data3 || data2 == data3);
     }
 
-    protected boolean check(short data1, short data2){
-        return data1 == data2;
+    protected String getDialog(Data data1, Data data2){
+        return data1.data == Physic.DATA_DIALOG ? data1.dialog : (data2.data == Physic.DATA_DIALOG ? data2.dialog : null);
+    }
+
+    protected int getEnemy(Data data1, Data data2){
+        return data1.data == Physic.DATA_ENEMY ? data1.enemy : (data2.data == Physic.DATA_ENEMY ? data2.enemy : -1);
     }
 
     public boolean isFootOnGround() {

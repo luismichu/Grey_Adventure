@@ -1,16 +1,15 @@
 package com.luismichu.greyadventure;
 
 import com.badlogic.gdx.Game;
+import com.badlogic.gdx.audio.Music;
 import com.luismichu.greyadventure.Manager.MyWindowListener;
 
 public class GreyAdventure extends Game {
-	static float worldSpeed = 1f;
+	public static Music music;
 
 	@Override
 	public void create () {
 		MyWindowListener.instantiate();
-		setScreen(new com.luismichu.greyadventure.Game(this, null));
-		//setScreen(new Play(this));
-		//setScreen(new MainMenu(this, true));
+		setScreen(new MainMenu(this, true));
 	}
 }

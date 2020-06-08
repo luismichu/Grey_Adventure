@@ -2,6 +2,8 @@ package com.luismichu.greyadventure.Characters;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
@@ -13,6 +15,8 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Timer;
 import com.luismichu.greyadventure.Game;
 import com.luismichu.greyadventure.Manager.MyAssetManager;
+import com.luismichu.greyadventure.Manager.MyPreferenceManager;
+import com.luismichu.greyadventure.Manager.Physic.Data;
 import com.luismichu.greyadventure.Manager.Physic.MyContactListener;
 import com.luismichu.greyadventure.Manager.Physic.Physic;
 import com.luismichu.greyadventure.Manager.Physic.PhysicObject;
@@ -23,20 +27,23 @@ public class Grey extends PhysicObject {
     private Animation<Texture> animation, animStanding, animRunningLeft, animRunningRight;
     private MyContactListener contactListener;
     private MyAssetManager assetManager;
+    private MyPreferenceManager preferenceManager;
     private float size = 1.75f;
     private float defAspectRatio, heartAspectRatio;
     private float elapsedTime = 0, elapsedTimeInvincible = 0, factor;
-    private boolean canJump, canDash, onGround, dashing, invincible, dead, heartBlink;
+    private boolean canJump, canDash, onGround, dashing, invincible, dead, heartBlink, kill;
     private Array<Sprite> dashSprites;
-    private Vector2 linearVelocity;
     private float speed, jump, dashX, dashY;
     private int lifePoints;
     private Array<Integer> keys;
+    private Sound landSound, damageSound;
+    private Color dashColor, red, green, blue;
 
-    public Grey(Vector2 pos, MyAssetManager assetManager, MyContactListener contactListener, Array<Integer> keys){
+    public Grey(Vector2 pos, MyAssetManager assetManager, MyPreferenceManager preferenceManager, MyContactListener contactListener, Array<Integer> keys){
         super();
 
         this.assetManager = assetManager;
+        this.preferenceManager = preferenceManager;
         this.keys = keys;
 
         animStanding = new Animation<>(1 / 2f / Game.WORLD_SPEED, assetManager.getTextures(MyAssetManager.AssetDescriptors.greyStanding));
@@ -66,17 +73,17 @@ public class Grey extends PhysicObject {
         setRestitution(0);
         setSize(new Vector2(sprite.getWidth() / 2.5f, sprite.getHeight() / 2f));
         setPosition(pos);
-        setUserData(Physic.DATA_GREY);
+        setUserData(new Data(Physic.DATA_GREY));
         setFixedRotation(true);
         setGroupIndex(Physic.GROUP_GROUND);
         createObject(false);
 
-        setSize(new Vector2(sprite.getWidth() / 2.6f, 0.2f));
-        setUserData(Physic.DATA_FOOT);
-        createFixture(new Vector2(0, -sprite.getHeight() / 2f - 0.2f), true);
+        setSize(new Vector2(sprite.getWidth() / 2.6f, 0.1f));
+        setUserData(new Data(Physic.DATA_FOOT));
+        createFixture(new Vector2(0, -sprite.getHeight() / 2f - 0.1f), true);
 
         setSize(new Vector2(sprite.getWidth() / 2.5f, 0.1f));
-        setUserData(Physic.DATA_GREY);
+        setUserData(new Data(Physic.DATA_GREY));
         setDensity(1);
         setFriction(20);
         setRestitution(0);
@@ -97,6 +104,14 @@ public class Grey extends PhysicObject {
         invincible = false;
         dead = false;
         heartBlink = false;
+        kill = false;
+
+        landSound = assetManager.getSound(MyAssetManager.AssetDescriptors.landSound);
+        damageSound = assetManager.getSound(MyAssetManager.AssetDescriptors.damageSound);
+
+        red = new Color(1, 0.3f, 0.3f, 1);
+        green = new Color(0.3f, 1, 0.3f, 1);
+        blue = new Color(0.3f, 0.3f, 1, 1);
     }
 
     public void update(){
@@ -120,7 +135,7 @@ public class Grey extends PhysicObject {
 
     public void draw(SpriteBatch batch){
         if(dashSprites.size > 0) {
-            sprite.setColor(0.3f, 0.3f, 1, 1);
+            sprite.setColor(dashColor);
             Texture t = sprite.getTexture();
             t.getTextureData().prepare();
             Pixmap p = t.getTextureData().consumePixmap();
@@ -196,13 +211,13 @@ public class Grey extends PhysicObject {
         }
     }
 
-    public void dash(){
+    public void dash(float factor, Color color){
+        dashColor = color;
         if(!dashing && canDash) {
             dashing = true;
             canDash = false;
             dashX = 0;
             dashY = 0;
-            float factor = 3.5f;
             if(keys.size > 0) {
                 if (keys.contains(Input.Keys.W, false)) {
                     dashY = speed * factor;
@@ -252,6 +267,34 @@ public class Grey extends PhysicObject {
         }
     }
 
+    public void justDash(){
+        dash(3.5f, red);
+    }
+
+    public void dashInvencible(){
+        invincible = true;
+        dash(5f, green);
+        Timer.schedule(new Timer.Task() {
+            @Override
+            public void run() {
+                invincible = false;
+            }
+        }, 1f / Game.WORLD_SPEED);
+    }
+
+    public void dashAndKill(){
+        invincible = true;
+        kill = true;
+        dash(5f, blue);
+        Timer.schedule(new Timer.Task() {
+            @Override
+            public void run() {
+                invincible = false;
+                kill = false;
+            }
+        }, 1f / Game.WORLD_SPEED);
+    }
+
     public void stop(){
         animation = animStanding;
     }
@@ -261,6 +304,8 @@ public class Grey extends PhysicObject {
             onGround = true;
             canJump = true;
 
+            if(preferenceManager.isMusicOn())
+                landSound.play(preferenceManager.getVolume() / 100f / 7);
             shift(Math.max(0, 0.01f * -body.getLinearVelocity().y));
         }
     }
@@ -304,6 +349,8 @@ public class Grey extends PhysicObject {
         return dead;
     }
 
+    public boolean kill(){ return kill; }
+
     public int getLifePoints(){ return lifePoints; }
 
     public void damage(){
@@ -311,6 +358,8 @@ public class Grey extends PhysicObject {
             if(lifePoints == 0)
                 dead = true;
             else {
+                if(preferenceManager.isMusicOn())
+                    damageSound.play(preferenceManager.getVolume() / 100f / 7);
                 invincible = true;
                 lifePoints--;
                 heartBlink = true;

@@ -2,7 +2,6 @@ package com.luismichu.greyadventure.Manager.Physic;
 
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
-import com.luismichu.greyadventure.Manager.Physic.MyPhysicManager;
 
 public class PhysicObject {
     private BodyDef.BodyType type;
@@ -11,7 +10,7 @@ public class PhysicObject {
     private float linearDamping, angle;
     private float density, restitution, friction;
     private short groupIndex;
-    private short userData;
+    private Data userData;
     protected Body body;
 
     public PhysicObject(){
@@ -26,7 +25,7 @@ public class PhysicObject {
         restitution = 0.3f;
         friction = 0.5f;
         groupIndex = 0;
-        userData = 0;
+        userData = null;
     }
 
     public void createObject(boolean sensor){
@@ -138,7 +137,7 @@ public class PhysicObject {
         this.groupIndex = groupIndex;
     }
 
-    public void setUserData(short userData) {
+    public void setUserData(Data userData) {
         this.userData = userData;
     }
 

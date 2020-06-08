@@ -9,7 +9,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
 
-//TODO doc
 public class Dialog {
     private SpriteBatch batch;
     private OrthographicCamera camera;
@@ -65,7 +64,7 @@ public class Dialog {
     public void update(){
         float delta = Gdx.graphics.getDeltaTime();
         textSpeed = preferenceManager.getTextSpeed();
-        volume = preferenceManager.getVolume() / 100f;
+        volume = preferenceManager.getVolume() / 100f * 2;
 
         elapsedTime += delta;
         charNum = (int)(elapsedTime / textSpeed);
@@ -76,10 +75,8 @@ public class Dialog {
         currentMessage = message.substring(0, Math.min(charNum, message.length()));
         label.setText(currentMessage);
 
-        if(!lastMessage.equals(currentMessage) && !currentMessage.endsWith(" ")) {
-            textSound.stop();
+        if(!lastMessage.equals(currentMessage) && !currentMessage.endsWith(" ") && preferenceManager.isMusicOn())
             textSound.play(volume);
-        }
     }
 
     public void draw(){
@@ -118,6 +115,8 @@ public class Dialog {
             setMessage(messages.first());
             messages.removeValue(messages.first(), false);
         }
+        else
+            label.setText("");
 
         return size > 0;
     }

@@ -2,6 +2,7 @@ package com.luismichu.greyadventure;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -9,11 +10,11 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.luismichu.greyadventure.Manager.GameState;
 import com.luismichu.greyadventure.Manager.MyAssetManager;
@@ -28,11 +29,11 @@ public class Play implements Screen {
     private ShapeRenderer shapeRenderer;
     private MyAssetManager assetManager;
     private MyPreferenceManager preferenceManager;
-
+    private Sound selectSound, deleteOptionSound;
     private Stage stage;
     private OrthographicCamera cameraUI;
     private FitViewport viewportUI;
-
+    private boolean fading;
     private Skin skin;
 
     private float alpha;
@@ -50,6 +51,9 @@ public class Play implements Screen {
         assetManager = new MyAssetManager();
         assetManager.loadPlay();
         skin = assetManager.getSkin(MyAssetManager.AssetDescriptors.skin);
+        selectSound = assetManager.getSound(MyAssetManager.AssetDescriptors.selectSound);
+        deleteOptionSound = assetManager.getSound(MyAssetManager.AssetDescriptors.deleteOptionSound);
+
         preferenceManager = new MyPreferenceManager();
 
         cameraUI = new OrthographicCamera();
@@ -64,6 +68,7 @@ public class Play implements Screen {
         createTable();
 
         alpha = 0;
+        fading = true;
     }
 
     @Override
@@ -71,8 +76,11 @@ public class Play implements Screen {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL_COLOR_BUFFER_BIT);
 
-        if(alpha < 1)
-            alpha += 0.5 * delta;
+        if(fading) {
+            if (alpha < 1)
+                alpha += 0.5 * delta;
+        } else
+            alpha -= 0.9 * delta;
 
         stage.act();
 
@@ -110,82 +118,176 @@ public class Play implements Screen {
         t1.setHeight(cameraUI.viewportHeight * 0.2f);
         t1.setWidth(cameraUI.viewportWidth * 0.8f);
         t1.setPosition(cameraUI.viewportWidth * 0.1f, cameraUI.viewportHeight * 0.65f);
-        Label player1 = new Label(gameState1 != null ? gameState1.name : "Vacio", skin);
+        final Label player1 = new Label(gameState1 != null ? gameState1.name : "Vacio", skin);
         player1.setAlignment(Align.left);
-        player1.setWidth(cameraUI.viewportWidth * 0.2f);
-        player1.setHeight(cameraUI.viewportHeight * 0.2f);
-        Label level1 = new Label(gameState1 != null ? "Nivel " + gameState1.level : "", skin);
+        final Label level1 = new Label(gameState1 != null ? "Nivel " + gameState1.level : "", skin);
         level1.setAlignment(Align.bottomRight);
-        level1.setWidth(cameraUI.viewportWidth * 0.4f);
         t1.row();
         t1.add(player1).width(cameraUI.viewportWidth * 0.3f).height(cameraUI.viewportHeight * 0.2f);
         t1.add(level1).width(cameraUI.viewportWidth * 0.35f).height(cameraUI.viewportHeight * 0.1f).padLeft(cameraUI.viewportHeight * 0.05f).align(Align.bottom);
+        final Label delete1 = new Label(gameState1 != null ? "Eliminar" : "", skin);
+        delete1.setAlignment(Align.topRight);
+        delete1.setWidth(cameraUI.viewportWidth * 0.35f);
+        delete1.setHeight(cameraUI.viewportHeight * 0.1f);
+        delete1.setPosition(cameraUI.viewportWidth * 0.49f, cameraUI.viewportHeight * 0.75f);
 
         Table t2 = new Table();
         t2.setHeight(cameraUI.viewportHeight * 0.2f);
         t2.setWidth(cameraUI.viewportWidth * 0.8f);
         t2.setPosition(cameraUI.viewportWidth * 0.1f, cameraUI.viewportHeight * 0.4f);
-        Label player2 = new Label(gameState2 != null ? gameState2.name : "Vacio", skin);
+        final Label player2 = new Label(gameState2 != null ? gameState2.name : "Vacio", skin);
         player2.setAlignment(Align.left);
         player2.setWidth(cameraUI.viewportWidth * 0.2f);
         player2.setHeight(cameraUI.viewportHeight * 0.2f);
-        Label level2 = new Label(gameState2 != null ? "Nivel " + gameState2.level : "", skin);
+        final Label level2 = new Label(gameState2 != null ? "Nivel " + gameState2.level : "", skin);
         level2.setAlignment(Align.bottomRight);
         level2.setWidth(cameraUI.viewportWidth * 0.4f);
         t2.row();
         t2.add(player2).width(cameraUI.viewportWidth * 0.3f).height(cameraUI.viewportHeight * 0.2f);
         t2.add(level2).width(cameraUI.viewportWidth * 0.35f).height(cameraUI.viewportHeight * 0.1f).padLeft(cameraUI.viewportHeight * 0.05f).align(Align.bottom);
+        final Label delete2 = new Label(gameState2 != null ? "Eliminar" : "", skin);
+        delete2.setAlignment(Align.topRight);
+        delete2.setWidth(cameraUI.viewportWidth * 0.35f);
+        delete2.setHeight(cameraUI.viewportHeight * 0.1f);
+        delete2.setPosition(cameraUI.viewportWidth * 0.49f, cameraUI.viewportHeight * 0.5f);
 
         Table t3 = new Table();
         t3.setHeight(cameraUI.viewportHeight * 0.2f);
         t3.setWidth(cameraUI.viewportWidth * 0.8f);
         t3.setPosition(cameraUI.viewportWidth * 0.1f, cameraUI.viewportHeight * 0.15f);
-        Label player3 = new Label(gameState3 != null ? gameState3.name : "Vacio", skin);
+        final Label player3 = new Label(gameState3 != null ? gameState3.name : "Vacio", skin);
         player3.setAlignment(Align.left);
         player3.setWidth(cameraUI.viewportWidth * 0.2f);
         player3.setHeight(cameraUI.viewportHeight * 0.2f);
-        Label level3 = new Label(gameState3 != null ? "Nivel " + gameState3.level : "", skin);
+        final Label level3 = new Label(gameState3 != null ? "Nivel " + gameState3.level : "", skin);
         level3.setAlignment(Align.bottomRight);
         level3.setWidth(cameraUI.viewportWidth * 0.4f);
         t3.row();
         t3.add(player3).width(cameraUI.viewportWidth * 0.3f).height(cameraUI.viewportHeight * 0.2f);
         t3.add(level3).width(cameraUI.viewportWidth * 0.35f).height(cameraUI.viewportHeight * 0.1f).padLeft(cameraUI.viewportHeight * 0.05f).align(Align.bottom);
+        final Label delete3 = new Label(gameState3 != null ? "Eliminar" : "", skin);
+        delete3.setAlignment(Align.topRight);
+        delete3.setWidth(cameraUI.viewportWidth * 0.35f);
+        delete3.setHeight(cameraUI.viewportHeight * 0.1f);
+        delete3.setPosition(cameraUI.viewportWidth * 0.49f, cameraUI.viewportHeight * 0.25f);
 
-        t1.addListener(new ClickListener(){
+        player1.addListener(new ClickListener(){
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-                if(gameState1 == null){
+                if(preferenceManager.isMusicOn())
+                    selectSound.play(preferenceManager.getVolume() / 100f);
+                if(gameState1 == null || gameState1.destroyed){
                     insertName(1);
                 } else {
-                    greyAdventure.setScreen(new Game(greyAdventure, gameState1));
-                    dispose();
+                    Gdx.input.setInputProcessor(null);
+                    GreyAdventure.music.stop();
+                    fading = false;
+                    Timer.schedule(new Timer.Task() {
+                                       @Override
+                                       public void run() {
+                                           greyAdventure.setScreen(new Game(greyAdventure, gameState1));
+                                           dispose();
+                                       }
+                                   }, 1.2f / Game.WORLD_SPEED);
+
                 }
                 super.touchUp(event, x, y, pointer, button);
             }
         });
 
-        t2.addListener(new ClickListener(){
+        player2.addListener(new ClickListener(){
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-                if(gameState2 == null){
+                if(preferenceManager.isMusicOn())
+                    selectSound.play(preferenceManager.getVolume() / 100f);
+                if(gameState2 == null || gameState2.destroyed){
                     insertName(2);
                 } else {
-                    greyAdventure.setScreen(new Game(greyAdventure, gameState2));
-                    dispose();
+                    Gdx.input.setInputProcessor(null);
+                    GreyAdventure.music.stop();
+                    fading = false;
+                    Timer.schedule(new Timer.Task() {
+                        @Override
+                        public void run() {
+                            greyAdventure.setScreen(new Game(greyAdventure, gameState2));
+                            dispose();
+                        }
+                    }, 1.2f / Game.WORLD_SPEED);
                 }
                 super.touchUp(event, x, y, pointer, button);
             }
         });
 
-        t3.addListener(new ClickListener(){
+        player3.addListener(new ClickListener(){
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-                if(gameState3 == null){
+                if(preferenceManager.isMusicOn())
+                    selectSound.play(preferenceManager.getVolume() / 100f);
+                if(gameState3 == null || gameState3.destroyed){
                     insertName(3);
                 } else {
-                    greyAdventure.setScreen(new Game(greyAdventure, gameState3));
-                    dispose();
+                    Gdx.input.setInputProcessor(null);
+                    GreyAdventure.music.stop();
+                    fading = false;
+                    Timer.schedule(new Timer.Task() {
+                        @Override
+                        public void run() {
+                            greyAdventure.setScreen(new Game(greyAdventure, gameState3));
+                            dispose();
+                        }
+                    }, 1.2f / Game.WORLD_SPEED);
                 }
+                super.touchUp(event, x, y, pointer, button);
+            }
+        });
+
+        delete1.addListener(new ClickListener(){
+            @Override
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                if(MyDatabaseManager.read(1) != null) {
+                    if (preferenceManager.isMusicOn())
+                        deleteOptionSound.play(preferenceManager.getVolume() / 100f);
+                    gameState1.destroyed = true;
+                    MyDatabaseManager.delete(1);
+                    player1.setText("Vacio");
+                    level1.setText("");
+                    delete1.setText("");
+                }
+
+                super.touchUp(event, x, y, pointer, button);
+            }
+        });
+
+        delete2.addListener(new ClickListener(){
+            @Override
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                if(MyDatabaseManager.read(2) != null) {
+                    if (preferenceManager.isMusicOn())
+                        deleteOptionSound.play(preferenceManager.getVolume() / 100f);
+                    gameState2.destroyed = true;
+                    MyDatabaseManager.delete(2);
+                    player2.setText("Vacio");
+                    level2.setText("");
+                    delete2.setText("");
+                }
+
+                super.touchUp(event, x, y, pointer, button);
+            }
+        });
+
+        delete3.addListener(new ClickListener(){
+            @Override
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                if(MyDatabaseManager.read(3) != null) {
+                    if (preferenceManager.isMusicOn())
+                        deleteOptionSound.play(preferenceManager.getVolume() / 100f);
+                    gameState3.destroyed = true;
+                    MyDatabaseManager.delete(3);
+                    player3.setText("Vacio");
+                    level3.setText("");
+                    delete3.setText("");
+                }
+
                 super.touchUp(event, x, y, pointer, button);
             }
         });
@@ -193,6 +295,9 @@ public class Play implements Screen {
         stage.addActor(t1);
         stage.addActor(t2);
         stage.addActor(t3);
+        stage.addActor(delete1);
+        stage.addActor(delete2);
+        stage.addActor(delete3);
     }
 
     private void insertName(final int position){
@@ -226,16 +331,25 @@ public class Play implements Screen {
         btConfirmar.addListener(new ClickListener(){
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                if(preferenceManager.isMusicOn())
+                    selectSound.play(preferenceManager.getVolume() / 100f);
                 String name = txtField.getText();
-                if(name == null || name.isEmpty() || name.trim().isEmpty()){
-                    System.out.println("maaal");
+                if(name == null || name.trim().length() < 4 || name.trim().length() > 20){
                     if(!stage.getActors().contains(lblError, false))
                         stage.addActor(lblError);
                 } else {
-                    GameState gameState = new GameState(position, name, 1);
+                    GreyAdventure.music.stop();
+                    Gdx.input.setInputProcessor(null);
+                    final GameState gameState = new GameState(position, name, 0);
                     MyDatabaseManager.insert(gameState);
-                    greyAdventure.setScreen(new Game(greyAdventure, gameState));
-                    dispose();
+                    fading = false;
+                    Timer.schedule(new Timer.Task() {
+                        @Override
+                        public void run() {
+                            greyAdventure.setScreen(new Game(greyAdventure, gameState));
+                            dispose();
+                        }
+                    }, 1.2f / Game.WORLD_SPEED);
                 }
 
                 super.touchUp(event, x, y, pointer, button);
@@ -245,6 +359,8 @@ public class Play implements Screen {
         btCancelar.addListener(new ClickListener(){
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                if(preferenceManager.isMusicOn())
+                    selectSound.play(preferenceManager.getVolume() / 100f);
                 stage.clear();
                 createTable();
 

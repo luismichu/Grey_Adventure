@@ -25,15 +25,20 @@ public class MyAssetManager {
         manager.load(AssetDescriptors.skin);
         manager.load(AssetDescriptors.mainMenuBackground);
         manager.load(AssetDescriptors.greyAdventureLogo);
+        manager.load(AssetDescriptors.musicMainMenu);
+        manager.load(AssetDescriptors.selectSound);
+        manager.load(AssetDescriptors.selectOptionSound);
         manager.finishLoading();
     }
 
     public void loadPlay(){
         manager.load(AssetDescriptors.skin);
+        manager.load(AssetDescriptors.selectSound);
+        manager.load(AssetDescriptors.deleteOptionSound);
         manager.finishLoading();
     }
 
-    public void loadGame(){
+    public void loadGrey(){
         for(MyAssetDescriptor texture : AssetDescriptors.greyStanding)
             manager.load(texture);
 
@@ -42,6 +47,13 @@ public class MyAssetManager {
 
         for(MyAssetDescriptor texture : AssetDescriptors.greyRunningR)
             manager.load(texture);
+
+        manager.load(AssetDescriptors.heart);
+        manager.load(AssetDescriptors.heart_empty);
+        manager.load(AssetDescriptors.landSound);
+        manager.load(AssetDescriptors.damageSound);
+
+        manager.finishLoading();
     }
 
     public void loadDialog(){
@@ -93,12 +105,8 @@ public class MyAssetManager {
         return arrayTexture;
     }
 
-    public Array<Music> getMusics(Array<MyAssetDescriptor> arrayAssetDescriptorMusic){
-        Array<Music> arrayMusic = new Array<>();
-
-        for(MyAssetDescriptor t : arrayAssetDescriptorMusic)
-            arrayMusic.add((Music) manager.get(t));
-        return arrayMusic;
+    public Music getMusic(MyAssetDescriptor assetDescriptorMusic){
+        return (Music) manager.get(assetDescriptorMusic);
     }
 
     public Array<Sound> getSounds(Array<MyAssetDescriptor> arrayAssetDescriptorSound){
@@ -134,9 +142,13 @@ public class MyAssetManager {
         public static final Array<MyAssetDescriptor> enemyGreenAttack = new Array<>();
         public static final Array<MyAssetDescriptor> enemyBlueAttack = new Array<>();
         public static final Array<MyAssetDescriptor> dialogueBox = new Array<>();
-        public static final Array<MyAssetDescriptor> music = new Array<>();
         public static final Array<MyAssetDescriptor> deathPlayerSound = new Array<>();
         public static final MyAssetDescriptor textSound = new MyAssetDescriptor(Assets.TEXT_SOUND, Sound.class);
+        public static final MyAssetDescriptor landSound = new MyAssetDescriptor(Assets.LAND_SOUND, Sound.class);
+        public static final MyAssetDescriptor selectSound = new MyAssetDescriptor(Assets.SELECT_SOUND, Sound.class);
+        public static final MyAssetDescriptor selectOptionSound = new MyAssetDescriptor(Assets.SELECT_OPTION_SOUND, Sound.class);
+        public static final MyAssetDescriptor deleteOptionSound = new MyAssetDescriptor(Assets.DELETE_OPTION_SOUND, Sound.class);
+        public static final MyAssetDescriptor damageSound = new MyAssetDescriptor(Assets.DAMAGE_SOUND, Sound.class);
         public static final MyAssetDescriptor deathSound = new MyAssetDescriptor(Assets.DEATH_SOUND, Sound.class);
         public static final MyAssetDescriptor skin = new MyAssetDescriptor(Assets.SKIN, Skin.class);
         public static final MyAssetDescriptor mainMenuBackground = new MyAssetDescriptor(Assets.MAIN_MENU_BACKGROUND, Texture.class);
@@ -144,6 +156,10 @@ public class MyAssetManager {
         public static final MyAssetDescriptor map1 = new MyAssetDescriptor(Assets.MAP1, TiledMap.class);
         public static final MyAssetDescriptor map2 = new MyAssetDescriptor(Assets.MAP2, TiledMap.class);
         public static final MyAssetDescriptor map3 = new MyAssetDescriptor(Assets.MAP3, TiledMap.class);
+        public static final MyAssetDescriptor musicMainMenu = new MyAssetDescriptor(Assets.MUSIC_MAIN_MENU, Music.class);
+        public static final MyAssetDescriptor musicLevel1 = new MyAssetDescriptor(Assets.MUSIC_LEVEL1, Music.class);
+        public static final MyAssetDescriptor musicLevel2 = new MyAssetDescriptor(Assets.MUSIC_LEVEL2, Music.class);
+        public static final MyAssetDescriptor musicLevel3 = new MyAssetDescriptor(Assets.MUSIC_LEVEL3, Music.class);
 
         private AssetDescriptors(){
             for (int i = 0; i < Assets.GREY_STANDING_NUM; i++)
@@ -168,7 +184,7 @@ public class MyAssetManager {
                 dialogueBox.add(new MyAssetDescriptor(Assets.DIALOGUE_BOX + i + Assets.DIALOGUE_BOX_EXT, Texture.class));
 
             for (int i = 0; i < Assets.DEATH_PLAYER_NUM; i++)
-                deathPlayerSound.add(new MyAssetDescriptor(Assets.DEAT_PLAYER_SOUND + i + Assets.DEATH_PLAYER_EXT, Sound.class));
+                deathPlayerSound.add(new MyAssetDescriptor(Assets.DEATH_PLAYER_SOUND + i + Assets.DEATH_PLAYER_EXT, Sound.class));
         }
 
         public static void initialize(){
@@ -200,10 +216,19 @@ public class MyAssetManager {
             public static final String MAIN_MENU_BACKGROUND = "maps/main_menu_background.png";
             public static final String GREY_ADVENTURE_LOGO = "sprites/grey_adventure_logo.png";
 
-            public static final String MUSIC = "musica";
-            public static final String TEXT_SOUND = "sounds/text3.wav";
+            public static final String MUSIC_MAIN_MENU = "music/music_main_menu.mp3";
+            public static final String MUSIC_LEVEL1 = "music/In the monsters lair.mp3";
+            public static final String MUSIC_LEVEL2 = "music/On My Way.wav";
+            public static final String MUSIC_LEVEL3 = "music/Step by step.mp3";
+
+            public static final String TEXT_SOUND = "sounds/dialog.wav";
+            public static final String LAND_SOUND = "sounds/inventory_sound_effects/cloth-inventory.wav";
+            public static final String SELECT_SOUND = "sounds/select.wav";
+            public static final String SELECT_OPTION_SOUND = "sounds/select_option.wav";
+            public static final String DELETE_OPTION_SOUND = "sounds/delete_option.wav";
+            public static final String DAMAGE_SOUND = "sounds/damage.wav";
             public static final String DEATH_SOUND = "sounds/death.wav";
-            public static final String DEAT_PLAYER_SOUND = "sounds/player/d_";
+            public static final String DEATH_PLAYER_SOUND = "sounds/player/d_";
             public static final int DEATH_PLAYER_NUM = 11;
             public static final String DEATH_PLAYER_EXT = ".wav";
 

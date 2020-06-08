@@ -3,63 +3,37 @@ package com.luismichu.greyadventure.Manager;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Graphics;
 import com.badlogic.gdx.Preferences;
-import com.badlogic.gdx.Application;
 
 import java.awt.*;
 
-/**
- * Wraps LibGDX Preferences class
- */
 public class MyPreferenceManager {
     Preferences prefs;
 
-    /**
-     * Creates a new instance of LibGDX Preferences from {@link Application#getPreferences(String name)}.
-     */
     public MyPreferenceManager(){
         prefs = Gdx.app.getPreferences(Preference.PREFERENCE);
     }
 
-    /**
-     * @return true if music is on, else false.
-     */
     public boolean isMusicOn(){
         return prefs.getBoolean(Preference.MUSIC, true);
     }
 
-    /**
-     * @param state true to set music on, else false.
-     */
     public void setMusic(boolean state){
         prefs.putBoolean(Preference.MUSIC, state);
     }
 
-    /**
-     * @return volume percentage from 0 to 100.
-     */
     public int getVolume(){
         return (int)(prefs.getFloat(Preference.VOLUME, 1) * 100);
     }
 
-    /**
-     * Sets the volume for all sounds and music.
-     * @param percentage from 0 to 100
-     */
     public void setVolume(int percentage){
         prefs.putFloat(Preference.VOLUME, percentage / 100f);
     }
 
-    /**
-     * @return int[] with resolution's width and height.
-     */
     public int[] getResolution(){
         return new int[]{prefs.getInteger(Preference.RESOLUTION_WIDTH, Preference.DEFAULT_WIDTH),
                 prefs.getInteger(Preference.RESOLUTION_HEIGHT, Preference.DEFAULT_HEIGHT)};
     }
 
-    /**
-     * @param resolution int[] with resolution's width and height.
-     */
     public void setResolution(int[] resolution){
         prefs.putInteger(Preference.RESOLUTION_WIDTH, resolution[0]);
         prefs.putInteger(Preference.RESOLUTION_HEIGHT, resolution[1]);
@@ -84,7 +58,6 @@ public class MyPreferenceManager {
         return prefs.getBoolean(Preference.FULLSCREEN, true);
     }
 
-    //TODO doc
     public void setVSync(boolean state){
         Gdx.graphics.setVSync(state);
         prefs.putBoolean(Preference.VSYNC, state);
@@ -106,9 +79,6 @@ public class MyPreferenceManager {
         prefs.flush();
     }
 
-    /**
-     * Hardcoded Strings with names of preferences.
-     */
     public static class Preference{
         public static final String PREFERENCE = "myPrefs";
         public static final String MUSIC = "music";

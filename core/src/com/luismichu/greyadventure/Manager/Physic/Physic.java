@@ -14,7 +14,8 @@ public class Physic{
     public static final short DATA_DEATH = 1 << 4;
     public static final short DATA_HIDDEN = 1 << 5;
     public static final short DATA_ENEMY = 1 << 6;
-    public static final short DATA_DIALOG = 1 << 7;
+    public static final short DATA_END = 1 << 7;
+    public static final short DATA_DIALOG = 1 << 8;
 
     public static final short CATEGORY_GROUND = 1;
     public static final short CATEGORY_PLAYER = 1 << 2;
@@ -33,6 +34,7 @@ public class Physic{
     public static final String HIDDEN_LAYER = "hidden";
     public static final String ENEMIES_LAYER = "enemies";
     public static final String DIALOGS_LAYER = "dialogs";
+    public static final String END_LAYER = "end";
 
     private Physic(){}
 }

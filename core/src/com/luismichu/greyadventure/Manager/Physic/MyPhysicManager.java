@@ -38,4 +38,8 @@ public class MyPhysicManager {
     public Body createBody(BodyDef bodyDef){
         return world.createBody(bodyDef);
     }
+
+    public void dispose(){
+        physicManager = null;
+    }
 }

@@ -30,7 +30,7 @@ public class MyWindowListener implements Lwjgl3WindowListener{
 
     @Override
     public void maximized(boolean isMaximized) {
-        System.out.println(isMaximized);
+
     }
 
     @Override
@@ -45,7 +45,6 @@ public class MyWindowListener implements Lwjgl3WindowListener{
 
     @Override
     public boolean closeRequested() {
-        System.out.println("closing...");
         Gdx.app.exit();
         return false;
     }

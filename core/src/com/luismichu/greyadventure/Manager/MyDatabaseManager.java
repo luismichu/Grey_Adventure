@@ -1,8 +1,6 @@
 package com.luismichu.greyadventure.Manager;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.utils.Array;
-
 import java.sql.*;
 
 public class MyDatabaseManager {
@@ -61,6 +59,28 @@ public class MyDatabaseManager {
             statement = connection.prepareStatement(sql);
             statement.setInt(1, level);
             statement.setInt(2, position);
+            statement.executeUpdate();
+
+            statement.close();
+
+            if (connection != null)
+                connection.close();
+        } catch (SQLException cnfe) {
+            cnfe.printStackTrace();
+        }
+    }
+
+    public static void delete(int position){
+        try {
+            loadDatabase();
+
+            String sql = "CREATE TABLE IF NOT EXISTS gameStates (position int primary key, name text, level int)";
+            PreparedStatement statement = connection.prepareStatement(sql);
+            statement.executeUpdate();
+
+            sql = "DELETE FROM gameStates WHERE position = (?)";
+            statement = connection.prepareStatement(sql);
+            statement.setInt(1, position);
             statement.executeUpdate();
 
             statement.close();

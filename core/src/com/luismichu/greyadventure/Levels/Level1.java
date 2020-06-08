@@ -10,36 +10,29 @@ import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.maps.MapObjects;
-import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.*;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Timer;
 import com.luismichu.greyadventure.Characters.Enemy;
-import com.luismichu.greyadventure.Game;
 import com.luismichu.greyadventure.Characters.Grey;
+import com.luismichu.greyadventure.Game;
 import com.luismichu.greyadventure.Manager.*;
-import com.luismichu.greyadventure.Manager.Physic.MyContactListener;
+import com.luismichu.greyadventure.Manager.Physic.Data;
 import com.luismichu.greyadventure.Manager.Physic.MyPhysicManager;
 import com.luismichu.greyadventure.Manager.Physic.Physic;
-import sun.jvm.hotspot.opto.PhiNode;
 
 public class Level1 extends Level {
     private static Level1 level1;
-    private Box2DDebugRenderer debugRenderer;
     private OrthographicCamera cameraTiled;
     private MyCustomContactListener contactListener;
-    private Sound deathSound;
     private Array<Sound> deathPlayerSound;
     private RayHandler rayHandler;
+    private PointLight lightEnd;
 
     public static Level1 create(MyAssetManager assetManager, MyPreferenceManager preferenceManager, MyPhysicManager physicManager,
                          OrthographicCamera camera, OrthographicCamera cameraUI, GameState gameState){
@@ -55,17 +48,13 @@ public class Level1 extends Level {
                    OrthographicCamera camera, OrthographicCamera cameraUI, GameState gameState){
         super(assetManager, preferenceManager, physicManager, camera, cameraUI, gameState);
 
-        assetManager.addToQueue(MyAssetManager.AssetDescriptors.greyRunningL);
-        assetManager.addToQueue(MyAssetManager.AssetDescriptors.greyRunningR);
-        assetManager.addToQueue(MyAssetManager.AssetDescriptors.greyStanding);
-        assetManager.addToQueue(MyAssetManager.AssetDescriptors.heart);
-        assetManager.addToQueue(MyAssetManager.AssetDescriptors.heart_empty);
         assetManager.addToQueue(MyAssetManager.AssetDescriptors.map1);
         assetManager.addToQueue(MyAssetManager.AssetDescriptors.enemyRedAttack);
-        assetManager.addToQueue(MyAssetManager.AssetDescriptors.deathSound);
         assetManager.addToQueue(MyAssetManager.AssetDescriptors.deathPlayerSound);
+        assetManager.addToQueue(MyAssetManager.AssetDescriptors.musicLevel1);
 
         assetManager.loadQueue();
+        assetManager.loadGrey();
 
         Vector2 pos = new Vector2(2, 7);
 
@@ -81,19 +70,22 @@ public class Level1 extends Level {
         contactListener = new MyCustomContactListener(this);
         physicManager.setContactListener(contactListener);
 
-        grey = new Grey(pos, assetManager, contactListener, keys);
+        grey = new Grey(pos, assetManager, preferenceManager, contactListener, keys);
 
         createObjectsFromLayer(Physic.OBJECT_LAYER, false, Physic.DATA_GROUND, Physic.MASK_GROUND, Physic.GROUP_GROUND);
         createObjectsFromLayer(Physic.DEATH_LAYER, true, Physic.DATA_DEATH, Physic.MASK_GROUND, Physic.GROUP_GROUND);
         createObjectsFromLayer(Physic.HIDDEN_LAYER, false, Physic.CATEGORY_HIDDEN, Physic.MASK_HIDDEN, Physic.GROUP_HIDDEN);
+        createObjectsFromLayer(Physic.END_LAYER, true, Physic.DATA_END, Physic.MASK_GROUND, Physic.GROUP_GROUND);
 
-        createEnemies();
+        createEnemies(assetManager.getTextures(MyAssetManager.AssetDescriptors.enemyRedAttack));
         createDialogs();
 
-        debugRenderer = new Box2DDebugRenderer(true, true, true, true, true, true);
-
-        deathSound = assetManager.getSound(MyAssetManager.AssetDescriptors.deathSound);
         deathPlayerSound = assetManager.getSounds(MyAssetManager.AssetDescriptors.deathPlayerSound);
+
+        music = assetManager.getMusic(MyAssetManager.AssetDescriptors.musicLevel1);
+        music.setLooping(true);
+        music.setVolume(preferenceManager.getVolume() / 100f / 4);
+        music.play();
 
         rayHandler = new RayHandler(physicManager.getWorld());
         rayHandler.resizeFBO(640, 360);
@@ -107,16 +99,24 @@ public class Level1 extends Level {
         light.setXray(true);
         light.attachToBody(grey.getBody());
 
+        lightEnd = new PointLight(rayHandler, 50);
+        lightEnd.setDistance(15);
+        lightEnd.setColor(new Color(0.4f,0.4f,0.4f,1f));
+        lightEnd.setSoft(true);
+        light.setXray(true);
+        lightEnd.setPosition(101, 8);
+
         DirectionalLight sun = new DirectionalLight(rayHandler, 500, new Color(0.05f,0.05f,0.1f,1), -91);
         sun.setSoft(true);
         sun.setSoftnessLength(2);
         Light.setGlobalContactFilter(Physic.CATEGORY_HIDDEN, Physic.MASK_HIDDEN, Physic.GROUP_HIDDEN);
+
+        alpha2 = 1;
     }
 
     @Override
     protected void loadDialog(String name) {
         if((!name.equals("l1d3") && !name.equals("l1d4")) || deathCount >= 1) {
-            System.out.println(name);
             Array<String> newDialog = Dialogs.get(name);
             if (newDialog != null) {
                 if(!newDialog.isEmpty()) {
@@ -126,7 +126,7 @@ public class Level1 extends Level {
                     int size = dialogBodies.size;
                     do{
                         size--;
-                        found = dialogBodies.get(size).getUserData().toString().equals(name);
+                        found = ((Data) dialogBodies.get(size).getUserData()).dialog.equals(name);
                     } while(!found && size > 0);
                     if(found) {
                         garbageBodies.add(dialogBodies.removeIndex(size));
@@ -139,7 +139,13 @@ public class Level1 extends Level {
     @Override
     public void update() {
         if(!paused) {
-            if (dialoging) {
+            if(fading){
+                if(alpha2 > 0)
+                    alpha2 -= 0.9 * Gdx.graphics.getDeltaTime();
+                else
+                    fading = false;
+            }
+            else if (dialoging) {
                 dialog.update();
             }
             else {
@@ -190,8 +196,8 @@ public class Level1 extends Level {
             camera.position.set(camera.position.x + (grey.getPos().x - camera.position.x) * CAMERA_SPEED_X,
                     camera.position.y + (grey.getPos().y - camera.position.y) * CAMERA_SPEED_Y, 0);
 
-            cameraTiled.position.x = MathUtils.clamp(cameraTiled.position.x, 8 * Physic.P2M, cameraTiled.position.x);
-            camera.position.x = MathUtils.clamp(camera.position.x, 8, cameraTiled.position.x);
+            cameraTiled.position.x = MathUtils.clamp(cameraTiled.position.x, 8 * Physic.P2M, 92 * Physic.P2M);
+            camera.position.x = MathUtils.clamp(camera.position.x, 8, 92);
             cameraTiled.position.y = MathUtils.clamp(cameraTiled.position.y, 4.5f * Physic.P2M, 15 * Physic.P2M);
             camera.position.y = MathUtils.clamp(camera.position.y, 4.5f, 15);
 
@@ -199,10 +205,22 @@ public class Level1 extends Level {
             cameraUI.update();
             cameraTiled.update();
 
+            lightEnd.update();
+
             for(Body gBody : garbageBodies)
                 physicManager.getWorld().destroyBody(gBody);
 
             garbageBodies.clear();
+        }
+
+        if(preferenceManager.isMusicOn())
+            music.setVolume(preferenceManager.getVolume() / 100f / 7);
+
+        if(contactListener.end){
+            MyDatabaseManager.update(gameState.position, gameState.level + 1);
+            gameState = MyDatabaseManager.read(gameState.position);
+            next = true;
+            dispose();
         }
     }
 
@@ -215,8 +233,6 @@ public class Level1 extends Level {
             enemy.draw(batch);
         grey.draw(batch);
 
-        //debugRenderer.render(physicManager.getWorld(), camera.combined); //TODO
-
         rayHandler.setCombinedMatrix(camera);
         rayHandler.updateAndRender();
 
@@ -227,10 +243,11 @@ public class Level1 extends Level {
             dialog.draw();
 
         if(contactListener.isDead() || reviving || grey.isDead()) {
+            shapeRenderer.setProjectionMatrix(cameraUI.combined);
             shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
             shapeRenderer.setColor(0, 0, 0, 1f);
-            shapeRenderer.circle(((grey.getPos().x - camera.position.x) / 16 + 0.5f) * Gdx.graphics.getWidth(),
-                    ((grey.getPos().y - camera.position.y) / 9 + 0.5f) * Gdx.graphics.getHeight(), radius);
+            shapeRenderer.circle(((grey.getPos().x - camera.position.x) / 16 + 0.5f) * cameraUI.viewportWidth,
+                    ((grey.getPos().y - camera.position.y) / 9 + 0.5f) * cameraUI.viewportHeight, radius);
             shapeRenderer.end();
         }
 
@@ -266,6 +283,19 @@ public class Level1 extends Level {
 
             Gdx.gl.glDisable(GL20.GL_BLEND);
         }
+
+        if(fading){
+            Gdx.gl.glEnable(GL20.GL_BLEND);
+            Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+            shapeRenderer.setColor(0, 0, 0, alpha2);
+            shapeRenderer.setProjectionMatrix(cameraUI.combined);
+
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+            shapeRenderer.rect(0, 0, cameraUI.viewportWidth, cameraUI.viewportHeight);
+            shapeRenderer.end();
+
+            Gdx.gl.glDisable(GL20.GL_BLEND);
+        }
     }
 
     public void die(){
@@ -274,7 +304,8 @@ public class Level1 extends Level {
             grey.setInvincible(true);
             grey.setStatic();
             deathCount++;
-            deathPlayerSound.random().play();
+            if(preferenceManager.isMusicOn())
+                deathPlayerSound.random().play();
             physicManager.getWorld().clearForces();
             Timer.schedule(new Timer.Task() {
                 @Override
@@ -336,7 +367,7 @@ public class Level1 extends Level {
 
             case Input.Keys.SHIFT_LEFT:
                 if(!dialoging)
-                    grey.dash();
+                    grey.justDash();
             break;
 
             case Input.Keys.ESCAPE:
@@ -395,5 +426,13 @@ public class Level1 extends Level {
     @Override
     public boolean scrolled(int amount) {
         return false;
+    }
+
+    @Override
+    public void dispose() {
+        Dialogs.dispose();
+        physicManager.dispose();
+        music.stop();
+        level1 = null;
     }
 }
